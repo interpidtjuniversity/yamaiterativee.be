@@ -1,0 +1,63 @@
+syntax = "proto3";
+package proto;
+option go_package="../../invoke";
+
+message CreateBranchRequest{
+  int64 userId = 1;
+  string userName = 2;
+  string repository = 3;
+  string branch = 4;
+  bool isLock = 5;
+}
+message CreateBranchResponse{
+  bool success = 1;
+}
+
+message DeleteBranchRequest{
+  int64 userId = 1;
+  string userName = 2;
+  string repository = 3;
+  string branch = 4;
+}
+message DeleteBranchResponse{
+  bool success = 1;
+}
+
+message Merge2BranchRequest{
+  int64 userId = 1;
+  string userName = 2;
+  string repository = 3;
+  string sourceBranch = 4;
+  string targetBranch = 5;
+}
+message Merge2BranchResponse{
+  bool success = 1;
+}
+
+message ConflictDetectRequest{
+  string repository = 1;
+  string sourceBranch = 2;
+  string targetBranch = 3;
+}
+message ConflictDetectResponse{
+  bool hasConflict = 1;
+  string showConflictUri = 2;
+}
+
+message RegisterMRRequest{
+  string ownerName = 1;
+  string repoName = 2;
+  string sourceBranch = 3;
+  string targetBranch = 4;
+}
+message RegisterMRResponse{
+  string showDiffUri = 1;
+  int64 MRId = 2;
+}
+service YaMaHubBranchService{
+  rpc CreateBranch(CreateBranchRequest) returns (CreateBranchResponse) {}
+  rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchResponse) {}
+  rpc Merge2Branch(Merge2BranchRequest) returns (Merge2BranchResponse) {}
+  rpc Query2BranchConflict(ConflictDetectRequest) returns (ConflictDetectResponse) {}
+  rpc RegisterMergeRequest(RegisterMRRequest) returns (RegisterMRResponse){}
+}

@@ -1,0 +1,18 @@
+syntax = "proto3";
+package proto;
+option go_package="../../service";
+
+message StartYaMaPipeLineRequest{
+  int64 userId = 1;
+  string userName = 2;
+  string repository = 3;
+  string branch = 4;
+}
+
+message StartYaMaPipeLineResponse{
+  bool success = 1;
+}
+
+service YaMaPipeLineService{
+  rpc StartYaMaPipeLine(StartYaMaPipeLineRequest) returns (StartYaMaPipeLineResponse) {}
+}
