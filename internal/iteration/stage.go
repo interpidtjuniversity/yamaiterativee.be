@@ -2,6 +2,7 @@ package iteration
 
 import (
 	"encoding/json"
+	"sync"
 	"yama.io/yamaIterativeE/internal/context"
 )
 
@@ -64,6 +65,14 @@ type group struct {
 
 type groupOptions struct {
 	Title string `json:"title"`
+}
+
+var p *ping = &ping{counter: 0, m: map[int64]string{0:"loading", 1:"warning", 2:"success", 3:"error"}, colorM: map[int64]string{0:"1F49E0", 1:"#FFA003", 2:"#1DC11D", 3:"#FF3333"}}
+type ping struct {
+	mu sync.Mutex
+	counter int64
+	m map[int64]string
+	colorM map[int64]string
 }
 
 func IterInfo(c *context.Context) []byte {
@@ -255,4 +264,17 @@ func StageExecInfo(c *context.Context) {
 	//execId := c.ParamsInt64(":exec")
 }
 
-// "张启帆 给MR：#999999 的源分支提交代码触发了Pipeline #10000000"
+type stepStatus struct {
+	Type  string `json:"type"`
+	Color string `json:"color"`
+}
+
+
+func Ping(c *context.Context) []byte{
+	p.mu.Lock()
+	msg := stepStatus{Type: p.m[int64(int(p.counter)%len(p.m))], Color: p.colorM[int64(int(p.counter)%len(p.colorM))]}
+	p.counter++
+	p.mu.Unlock()
+	data, _ := json.Marshal(msg)
+	return data
+}

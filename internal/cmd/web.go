@@ -70,6 +70,7 @@ func runWeb(c *cli.Context) error {
 		m.Get("/", route.Home)
 
 		m.Group("/iteration", func() {
+			m.Get("/ping", iteration.Ping)
 			m.Group("/:iterationId", func() {
 				m.Get("/info", iteration.IterInfo)
 				m.Get("/:envType", iteration.IterPipelineInfo)
