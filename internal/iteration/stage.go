@@ -278,3 +278,25 @@ func Ping(c *context.Context) []byte{
 	data, _ := json.Marshal(msg)
 	return data
 }
+
+var ieah = &iterEnvActionHolder{m: map[string][]iterEnvAction{"dev": {{ "完成开发阶段"}, { "提交MR"}, {"Jar包管理"}, {"配置变更"}, {"触发pipeline"}, {"申请服务器"}, {"新建联调环境"}},
+                                                              "itg": {{ "完成集成阶段"}, { "提交MR"}, {"Jar包管理"}, {"触发pipeline"}},
+                                                              "pre": {{ "完成预发阶段"}, { "提交MR"}, {"Jar包管理"}, {"触发pipeline"}},
+                                                              "grayscale":{{ "完成灰度阶段"}, {"配置白名单"}, {"配置黑名单"}, {"流量控制"}},
+                                                              "prod": {{"完成发布"}},
+                                                              },
+}
+type iterEnvActionHolder struct {
+	m map[string][]iterEnvAction
+}
+type iterEnvAction struct {
+	ButtonShowWords string `json:"buttonShowWords"`
+}
+
+func IterActionInfo(c *context.Context) []byte {
+	envType := c.ParamsEscape(":envType")
+	iterEnvActions := ieah.m[envType]
+	data, _ := json.Marshal(iterEnvActions)
+
+	return data
+}

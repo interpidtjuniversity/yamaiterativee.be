@@ -81,6 +81,9 @@ func runWeb(c *cli.Context) error {
 					m.Get("/:exec", iteration.StageExecInfo)
 				})
 			})
+			m.Group("/action", func() {
+				m.Get("/:envType", iteration.IterActionInfo)
+			})
 		})
 	},
 		context.Contexter(),
