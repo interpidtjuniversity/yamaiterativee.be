@@ -71,16 +71,22 @@ func runWeb(c *cli.Context) error {
 
 		m.Group("/iteration", func() {
 			m.Get("/ping", iteration.Ping)
+
 			m.Group("/:iterationId", func() {
 				m.Get("/info", iteration.IterInfo)
-				m.Get("/:envType", iteration.IterPipelineInfo)
+				m.Group("/:envType", func() {
+					m.Get("", iteration.IterPipelineInfo)
+					m.Get("/info", iteration.IterEnvInfo)
+				})
 			})
+
 			m.Group("/pipeline", func() {
 				m.Group("/:stage", func() {
 					m.Get("", iteration.StageInfo)
 					m.Get("/:exec", iteration.StageExecInfo)
 				})
 			})
+
 			m.Group("/action", func() {
 				m.Get("/:envType", iteration.IterActionInfo)
 			})

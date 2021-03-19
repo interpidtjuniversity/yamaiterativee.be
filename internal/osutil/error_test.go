@@ -7,10 +7,11 @@ package osutil
 import (
 	"os"
 	"testing"
+	"yama.io/yamaIterativeE/internal/errutil"
 
 	"github.com/stretchr/testify/assert"
 
-	"gogs.io/gogs/internal/errutil"
+
 )
 
 func TestError_NotFound(t *testing.T) {

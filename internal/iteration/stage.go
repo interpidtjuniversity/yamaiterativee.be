@@ -300,3 +300,30 @@ func IterActionInfo(c *context.Context) []byte {
 
 	return data
 }
+
+
+var iei = &iterEnvInfoHolder{m: map[string]iterEnvInfo{
+	"dev": {TargetBranch: "E14621321654894_20210319", LatestCommit: "ce7894s", LatestMode: "MR", ServiceChange: "小", PRCount: 100, QualityScore: 90, ChangeLineCoverage: "90%"},
+	"pre": {TargetBranch: "master", LatestCommit: "b7s855", LatestMode: "MR", ServiceChange: "小", PRCount: 1000, QualityScore: 95, ChangeLineCoverage: "95%"},
+}}
+
+type iterEnvInfoHolder struct {
+	m map[string]iterEnvInfo
+}
+
+type iterEnvInfo struct {
+	TargetBranch       string          `json:"targetBranch"`
+	LatestMode         string          `json:"latestMode"`
+	LatestCommit       string          `json:"latestCommit"`
+	ServiceChange      string          `json:"serviceChange"`
+	PRCount            int             `json:"PRCount"`
+	QualityScore       int             `json:"qualityScore"`
+	ChangeLineCoverage string          `json:"changeLineCoverage"`
+}
+
+func IterEnvInfo (c *context.Context) []byte {
+	envType := c.ParamsEscape(":envType")
+	info := iei.m[envType]
+	data, _ := json.Marshal(info)
+	return data
+}
