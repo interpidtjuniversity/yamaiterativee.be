@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package osutil
+package util
 
 import (
 	"os"
@@ -17,10 +17,10 @@ func TestIsFile(t *testing.T) {
 		expVal bool
 	}{
 		{
-			path:   "osutil.go",
+			path:   "util.go",
 			expVal: true,
 		}, {
-			path:   "../osutil",
+			path:   "../util",
 			expVal: false,
 		}, {
 			path:   "not_found",
@@ -40,10 +40,10 @@ func TestIsDir(t *testing.T) {
 		expVal bool
 	}{
 		{
-			path:   "osutil.go",
+			path:   "util.go",
 			expVal: false,
 		}, {
-			path:   "../osutil",
+			path:   "../util",
 			expVal: true,
 		}, {
 			path:   "not_found",
@@ -63,10 +63,10 @@ func TestIsExist(t *testing.T) {
 		expVal bool
 	}{
 		{
-			path:   "osutil.go",
+			path:   "util.go",
 			expVal: true,
 		}, {
-			path:   "../osutil",
+			path:   "../util",
 			expVal: true,
 		}, {
 			path:   "not_found",

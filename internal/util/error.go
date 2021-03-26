@@ -2,14 +2,13 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package osutil
+package util
 
 import (
 	"os"
-	"yama.io/yamaIterativeE/internal/errutil"
 )
 
-var _ errutil.NotFound = (*Error)(nil)
+var _ NotFound = (*Error)(nil)
 
 // Error is a wrapper of an OS error, which handles not found.
 type Error struct {

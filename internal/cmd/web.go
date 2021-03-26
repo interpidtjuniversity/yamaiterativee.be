@@ -8,7 +8,8 @@ import (
 	"gopkg.in/macaron.v1"
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
-	"yama.io/yamaIterativeE/internal/iteration"
+	"yama.io/yamaIterativeE/internal/iteration/pipeline"
+	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/route"
 )
 
@@ -70,25 +71,25 @@ func runWeb(c *cli.Context) error {
 		m.Get("/", route.Home)
 
 		m.Group("/iteration", func() {
-			m.Get("/ping", iteration.Ping)
+			m.Get("/ping", stage.Ping)
 
 			m.Group("/:iterationId", func() {
-				m.Get("/info", iteration.IterInfo)
+				m.Get("/info", stage.IterInfo)
 				m.Group("/:envType", func() {
-					m.Get("", iteration.IterPipelineInfo)
-					m.Get("/info", iteration.IterEnvInfo)
+					m.Get("", pipeline.IterPipelineInfo)
+					m.Get("/info", stage.IterEnvInfo)
 				})
 			})
 
 			m.Group("/pipeline", func() {
 				m.Group("/:stage", func() {
-					m.Get("", iteration.StageInfo)
-					m.Get("/:exec", iteration.StageExecInfo)
+					m.Get("", stage.StageInfo)
+					m.Get("/:exec", stage.StageExecInfo)
 				})
 			})
 
 			m.Group("/action", func() {
-				m.Get("/:envType", iteration.IterActionInfo)
+				m.Get("/:envType", stage.IterActionInfo)
 			})
 		})
 	},

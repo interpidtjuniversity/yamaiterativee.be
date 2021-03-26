@@ -11,8 +11,7 @@ import (
 	"strings"
 	"time"
 	"yama.io/yamaIterativeE/internal/conf"
-	"yama.io/yamaIterativeE/internal/db"
-	"yama.io/yamaIterativeE/internal/errutil"
+	"yama.io/yamaIterativeE/internal/util"
 
 	"gopkg.in/macaron.v1"
 	log "unknwon.dev/clog/v2"
@@ -22,7 +21,7 @@ import (
 type Context struct {
 	*macaron.Context
 	Link        string // Current request URL
-	User        *db.User
+	UserId      int64
 	IsLogged    bool
 	IsBasicAuth bool
 	IsTokenAuth bool
@@ -74,10 +73,7 @@ func (c *Context) FormErr(names ...string) {
 // UserID returns ID of current logged in user.
 // It returns 0 if visitor is anonymous.
 func (c *Context) UserID() int64 {
-	if !c.IsLogged {
-		return 0
-	}
-	return c.User.ID
+	return c.UserId
 }
 
 // HasError returns true if error occurs in form validation.
@@ -175,7 +171,7 @@ func (c *Context) Errorf(err error, format string, args ...interface{}) {
 
 // NotFoundOrError responses with 404 page for not found error and 500 page otherwise.
 func (c *Context) NotFoundOrError(err error, msg string) {
-	if errutil.IsNotFound(err) {
+	if util.IsNotFound(err) {
 		c.NotFound()
 		return
 	}

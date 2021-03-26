@@ -1,12 +1,28 @@
 package db
 
+import (
+	"xorm.io/builder"
+)
+
 type IterationAction struct {
-	ID             int64    `xorm:"id autoincr pk"`
-	FinallyPass    bool     `xorm:"finally_pass" json:"-"`
-	PipeLineId     int64	`xorm:"pipeline_id"`
-	EnvGroup       string   `xorm:"env_group"`
-	State          string   `xorm:"state"`
-	PipeLineExecId []int64	`xorm:"pipeline_exec_id"`
+	ID          int64  `xorm:"id autoincr pk"`
+	ActorName   string `xorm:"actor_name"`
+	FinallyPass bool   `xorm:"finally_pass" json:"-"`
+	PipeLineId  int64  `xorm:"pipeline_id"`
+	EnvGroup    int64  `xorm:"env_group"`
+	State       string `xorm:"state"`
+	ActionInfo  string `xorm:"action_info"`
+	AvatarSrc   string `xorm:"avatar_src"`
+	ExtInfo     string `xorm:"ext_info"`
+}
+
+func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
+	var actions []*IterationAction
+	err := x.Where(builder.Eq{"env_group": actGroupId}).Find(&actions)
+	if err!=nil {
+		return nil, err
+	}
+	return actions, nil
 }
 
 type IterationMergeRequest struct {

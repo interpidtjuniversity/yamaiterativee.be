@@ -2,12 +2,11 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package osutil
+package util
 
 import (
 	"os"
 	"testing"
-	"yama.io/yamaIterativeE/internal/errutil"
 
 	"github.com/stretchr/testify/assert"
 
@@ -24,7 +23,7 @@ func TestError_NotFound(t *testing.T) {
 	}
 	for _, test := range tests {
 		t.Run("", func(t *testing.T) {
-			assert.Equal(t, test.expVal, errutil.IsNotFound(NewError(test.err)))
+			assert.Equal(t, test.expVal, IsNotFound(NewError(test.err)))
 		})
 	}
 }
