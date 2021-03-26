@@ -12,7 +12,7 @@ const DomainRecordType = "A"
 const Schema = "https"
 
 func init() {
-	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", "LTAI5tJ8otAjZGng83ksbpXX", "OfcgDQjx8RyNQSKZ9vD3jt8HzTkc9X")
+	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", "xxx", "xxx")
 	AliDNSClient = client
 }
 
