@@ -27,6 +27,6 @@ func Test_PipelineParse(t *testing.T) {
 		{0,0,0,0,0,0,0},
 		{0,0,0,0,0,0,0},
 	}}
-	endpoints,_ := ParseEndpoints(pipeline)
+	endpoints,_,_ := ParseDagAndLayout(pipeline)
 	fmt.Print(json.Marshal(endpoints))
 }
