@@ -129,6 +129,11 @@ type groupOptions struct {
 }
 
 
+func StartPipeline(c *context.Context) ([]byte, error) {
+	return nil,nil
+}
+
+
 func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	// check param
 	iterationId := c.ParamsInt64(":iterationId")
@@ -206,6 +211,8 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo
 		pipelineInfoTemplate.AvatarSrc=action.AvatarSrc
 		pipelineInfoTemplate.ExtInfo=action.ExtInfo
+		// only one group exist so we get index of 0
+		pipelineInfoTemplate.Groups[0].Options.Title = action.ActionGroupInfo
 
 		pipelineInfos = append(pipelineInfos, pipelineInfoTemplate)
 	})

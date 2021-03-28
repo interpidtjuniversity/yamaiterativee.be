@@ -10,6 +10,7 @@ import (
 type stageInfo struct {
 	Title string `json:"title"`
 	Img   string `json:"img"`
+	Index int64  `json:"index"`
 }
 
 type Node struct {
@@ -63,97 +64,6 @@ func IterInfo(c *context.Context) []byte {
 
 }
 
-//func IterPipelineInfo(c *context.Context) []byte {
-//	iterationId := c.ParamsInt64(":iterationId")
-//	envType := c.ParamsEscape(":envType")
-//
-//	var endpoint1_nodes []Endpoint
-//	var endpoint2_nodes []Endpoint
-//	var endpoint3_nodes []Endpoint
-//	var endpoint4_nodes []Endpoint
-//	var endpoint5_nodes []Endpoint
-//	var endpoint6_nodes []Endpoint
-//	var endpoint7_nodes []Endpoint
-//
-//	endpoint1_nodes = append(endpoint1_nodes, Endpoint{Id: "1_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint2_nodes = append(endpoint2_nodes, Endpoint{Id: "2_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint3_nodes = append(endpoint3_nodes, Endpoint{Id: "3_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//	endpoint3_nodes = append(endpoint3_nodes, Endpoint{Id: "3_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint4_nodes = append(endpoint4_nodes, Endpoint{Id: "4_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//	endpoint4_nodes = append(endpoint4_nodes, Endpoint{Id: "4_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint5_nodes = append(endpoint5_nodes, Endpoint{Id: "5_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//	endpoint5_nodes = append(endpoint5_nodes, Endpoint{Id: "5_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint5_nodes = append(endpoint5_nodes, Endpoint{Id: "5_top", Orientation: []int{0,-1}, Pos: []float64{0.5, 0}})
-//	endpoint6_nodes = append(endpoint6_nodes, Endpoint{Id: "6_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//	endpoint6_nodes = append(endpoint6_nodes, Endpoint{Id: "6_right", Orientation: []int{1,0}, Pos: []float64{0,0.5}})
-//	endpoint7_nodes = append(endpoint7_nodes, Endpoint{Id: "7_left", Orientation: []int{-1,0}, Pos: []float64{0,0.5}})
-//
-//	var nodes []Node
-//	nodes = append(nodes, Node{Endpoints: endpoint1_nodes, StageIdExecId: "1_1", StageId: 1, ExecId: 1, Id: 1, Label: "代码评审", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 55, Left: 50, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint2_nodes, StageIdExecId: "2_1", StageId: 2, ExecId: 1, Id: 2, Label: "冲突检测", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 50, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint3_nodes, StageIdExecId: "3_1", StageId: 3, ExecId: 1, Id: 3, Label: "代码扫描", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 225, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint4_nodes, StageIdExecId: "4_1", StageId: 4, ExecId: 1, Id: 4, Label: "预编译", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 400, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint5_nodes, StageIdExecId: "5_1", StageId: 5, ExecId: 1, Id: 5, Label: "合并", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 575, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint6_nodes, StageIdExecId: "6_1", StageId: 6, ExecId: 1, Id: 6, Label: "合并后编译", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 750, Group: "group"})
-//	nodes = append(nodes, Node{Endpoints: endpoint7_nodes, StageIdExecId: "7_1", StageId: 7, ExecId: 1, Id: 7, Label: "质量检测", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 125, Left: 925, Group: "group"})
-//
-//	var edges []edge
-//	edges = append(edges, edge{Source: "1_right", Target: "5_top", SourceNode: 1, TargetNode: 5, Arrow: true, Type: "endpoint", ArrowPosition: 0.5, ShapeType: "Flow"})
-//	edges = append(edges, edge{Source: "2_right", Target: "3_left", SourceNode: 2, TargetNode: 3, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//	edges = append(edges, edge{Source: "3_right", Target: "4_left", SourceNode: 3, TargetNode: 4, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//	edges = append(edges, edge{Source: "4_right", Target: "5_left", SourceNode: 4, TargetNode: 5, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//	edges = append(edges, edge{Source: "5_right", Target: "6_left", SourceNode: 5, TargetNode: 6, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//	edges = append(edges, edge{Source: "6_right", Target: "7_left", SourceNode: 6, TargetNode: 7, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//
-//	var groups []group
-//	groups = append(groups, group{Id: "group", Draggable: false, Top: 0, Left: 130, Width: 1100, Height: 225, Resize: false, Options: groupOptions{Title: "E123456789_zqf0304_dev -> E123456789_20210304"}})
-//
-//
-//
-//	var endpoint8_nodes []Endpoint
-//	var endpoint9_nodes []Endpoint
-//	var endpoint10_nodes []Endpoint
-//
-//	endpoint8_nodes = append(endpoint8_nodes, Endpoint{Id: "1_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint9_nodes = append(endpoint9_nodes, Endpoint{Id: "2_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//	endpoint9_nodes = append(endpoint9_nodes, Endpoint{Id: "2_right", Orientation: []int{1,0}, Pos: []float64{0, 0.5}})
-//	endpoint10_nodes = append(endpoint10_nodes, Endpoint{Id: "3_left", Orientation: []int{-1,0}, Pos: []float64{0, 0.5}})
-//
-//	var nodes2 []Node
-//	var edges2 []edge
-//
-//	nodes2 = append(nodes2, Node{StageIdExecId: "8_1", StageId: 8, ExecId: 1, Label: "机器变更", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 55, Left: 50, Group: "group", Endpoints: endpoint8_nodes, Id: 1})
-//	nodes2 = append(nodes2, Node{StageIdExecId: "9_1", StageId: 9, ExecId: 1, Label: "镜像构建", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 55, Left: 300, Group: "group", Endpoints: endpoint9_nodes, Id: 2})
-//	nodes2 = append(nodes2, Node{StageIdExecId: "10_1", StageId: 10, ExecId: 1, Label: "发布", ClassName: "icon-background-color", IconType: "icon-kaifa", Top: 55, Left: 550, Group: "group", Endpoints: endpoint10_nodes, Id: 3})
-//
-//	edges2 = append(edges2, edge{Source: "1_right", Target: "2_left", SourceNode: 1, TargetNode: 2, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//	edges2 = append(edges2, edge{Source: "2_right", Target: "3_left", SourceNode: 2, TargetNode: 3, Arrow: true, Type: "endpoint", ArrowPosition: 0.5})
-//
-//	var groups2 []group
-//	groups2 = append(groups2, group{Id: "group", Draggable: false, Top: 0, Left: 130, Width: 750, Height: 150, Resize: false, Options: groupOptions{Title: "张启帆 申请了服务器 E987654321 (3天前)"}})
-//
-//
-//	basicMR := pipelineInfo{Nodes: nodes, Edges: edges, Groups: groups, PipelineId: 2, ActionInfo: "张启帆 给MR：#999999 的源分支提交代码触发了Pipeline #10000000 开发环境", AvatarSrc: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", ExtInfo: "this is extInfo"}
-//	serverApply := pipelineInfo{Nodes: nodes2, Edges: edges2, Groups: groups2, PipelineId: 1, ActionInfo: "张启帆 申请了服务器 E987654321 (3天前)", AvatarSrc: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", ExtInfo: "this is extInfo"}
-//
-//
-//
-//	if iterationId == 1 {
-//		if envType == "dev" {
-//			data, _ := json.Marshal([]pipelineInfo{serverApply, basicMR})
-//			return data
-//		} else if envType == "pre" {
-//			basicMR.PipelineId=3
-//			basicMR.ActionInfo="张启帆 给MR：#999999 的源分支提交代码触发了Pipeline #10000000 预发环境"
-//			basicMR.Groups[0].Options.Title = "E123456789_zqf0304_pre -> E123456789_20210304"
-//			data, _ := json.Marshal([]pipelineInfo{basicMR})
-//			return data
-//		}
-//	}
-//	data,_ := json.Marshal([]pipelineInfo{})
-//	return data
-//}
-
 func StageInfo(c *context.Context) []byte{
 	stageId := c.ParamsInt64(":stage")
 
@@ -168,30 +78,30 @@ func StageInfo(c *context.Context) []byte{
 	var image_build []stageInfo
 	var release []stageInfo
 
-	code_review = append(code_review, stageInfo{Title: "孙武", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
-	code_review = append(code_review, stageInfo{Title: "孔子", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	code_review = append(code_review, stageInfo{Title: "孙武", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 0})
+	code_review = append(code_review, stageInfo{Title: "孔子", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 1})
 
-	conflict_detect = append(conflict_detect, stageInfo{Title: "代码预合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	conflict_detect = append(conflict_detect, stageInfo{Title: "代码预合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 0})
 
-	code_scan = append(code_scan, stageInfo{Title: "静态扫描", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
-	code_scan = append(code_scan, stageInfo{Title: "PMD", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	code_scan = append(code_scan, stageInfo{Title: "静态扫描", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
+	code_scan = append(code_scan, stageInfo{Title: "PMD", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
 
-	pre_compile = append(pre_compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	pre_compile = append(pre_compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
 
-	merge = append(merge, stageInfo{Title: "代码合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	merge = append(merge, stageInfo{Title: "代码合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
 
-	compile = append(compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	compile = append(compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
 
-	quality_detect = append(quality_detect, stageInfo{Title: "单元测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
-	quality_detect = append(quality_detect, stageInfo{Title: "集成测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	quality_detect = append(quality_detect, stageInfo{Title: "单元测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
+	quality_detect = append(quality_detect, stageInfo{Title: "集成测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
 
-	server_change = append(server_change, stageInfo{Title: "服务器安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	server_change = append(server_change, stageInfo{Title: "服务器安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
 
-	image_build = append(image_build, stageInfo{Title: "环境安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
-	image_build = append(image_build, stageInfo{Title: "服务构建", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	image_build = append(image_build, stageInfo{Title: "环境安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
+	image_build = append(image_build, stageInfo{Title: "服务构建", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
 
-	release = append(release, stageInfo{Title: "服务部署", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
-	release = append(release, stageInfo{Title: "服务测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png"})
+	release = append(release, stageInfo{Title: "服务部署", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
+	release = append(release, stageInfo{Title: "服务测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
 
 
 	switch stageId {
