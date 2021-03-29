@@ -1,6 +1,9 @@
 package db
 
-import "xorm.io/builder"
+import (
+	"fmt"
+	"xorm.io/builder"
+)
 
 type Stage struct {
 	ID          int64   `xorm:"id autoincr pk"`
@@ -21,4 +24,25 @@ func BranchQueryStage(stageIds []int64)([]*Stage,error) {
 		return nil, err
 	}
 	return stages,nil
+}
+
+func GetStageById(id int64)(*Stage,error) {
+	stage := &Stage{}
+	has, _ := x.ID(id).Get(stage)
+	if !has {
+		return nil, ErrIterationNotExist{Args: map[string]interface{}{"stageId":id}}
+	}
+	return stage, nil
+}
+
+type ErrStageNotExist struct {
+	Args map[string]interface{}
+}
+
+func (err ErrStageNotExist) Error() string {
+	return fmt.Sprintf("stage does not exist: %v", err.Args)
+}
+
+func (ErrStageNotExist) NotFound() bool {
+	return true
 }

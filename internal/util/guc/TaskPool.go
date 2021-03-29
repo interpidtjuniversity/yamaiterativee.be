@@ -1,8 +1,11 @@
 package guc
 
-import "sync"
+import (
+	"math"
+	"sync"
+)
 
-type taskPool interface {
+type TaskPool interface {
 	Reg(bean interface{}) error
 	UnReg(bean interface{}) error
 	ShutDown()
@@ -10,7 +13,7 @@ type taskPool interface {
 }
 
 type Config struct {
-	maxWorkers int
+	MaxWorkers int
 }
 
 type Worker struct {
@@ -18,20 +21,34 @@ type Worker struct {
 	Close   chan bool
 }
 
-type TaskPool struct {
+type BaseTaskPool struct {
 	Workers []*Worker
 	Lock    sync.Mutex
 }
 
-func (tp *TaskPool) Init(config Config) {
-	tp.Workers = make([]*Worker, config.maxWorkers)
-	for i := 0; i < config.maxWorkers; i++ {
+func (tp *BaseTaskPool) Init(config Config) {
+	tp.Workers = make([]*Worker, config.MaxWorkers)
+	for i := 0; i < config.MaxWorkers; i++ {
 		tp.Workers[i].Channel = make(chan *Task)
+		tp.Workers[i].Close = make(chan bool)
 	}
 }
 
+func (tp *BaseTaskPool) GetWorker() *Worker{
+	min := math.MaxInt32
+	var index int
+	for i := 0; i < len(tp.Workers); i++ {
+		nums := len(tp.Workers[i].Channel)
+		if nums < min {
+			min = nums
+			index = i
+		}
+	}
+	return tp.Workers[index]
+}
 
-func (tp *TaskPool) ShutDown() {
+
+func (tp *BaseTaskPool) ShutDown() {
 	for i := 0; i < len(tp.Workers); i++ {
 		tp.Workers[i].Close <- true
 		close(tp.Workers[i].Channel)
@@ -39,7 +56,7 @@ func (tp *TaskPool) ShutDown() {
 	}
 }
 
-func (tp *TaskPool) Start() {
+func (tp *BaseTaskPool) Start() {
 	for i := 0; i < len(tp.Workers); i++ {
 		go func(i int) {
 			worker := tp.Workers[i]
@@ -53,7 +70,7 @@ func (tp *TaskPool) Start() {
 					if err == nil{
 						(*task).Success(result)
 					} else{
-						(*task).Fail()
+						(*task).Failure()
 					}
 					// if is git commit or cancel pipeline runtime
 					if (*task).IsCancel() {

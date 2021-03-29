@@ -130,7 +130,28 @@ type groupOptions struct {
 
 
 func StartPipeline(c *context.Context) ([]byte, error) {
-	return nil,nil
+	// get pipeline
+	pipelineId := c.ParamsInt64(":pipelineId")
+	actorName := c.Params("actorName")
+	envGroup := c.ParamsInt64("envGroup")
+	actionInfo := c.Params("actionInfo")
+	avatarSrc := c.Params("avatarSrc")
+	extInfo := c.Params("extInfo")
+	actionGroupInfo := c.Params("actionGroupInfo")
+
+
+	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: "Init",
+		ActionGroupInfo: actionGroupInfo, ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExtInfo: extInfo, ExecPath: "/root/yamaIterativeE/yamaIterativeE-pipeline-exec",
+	}
+	iterActionId, _ := db.InsertIterationAction(pipeExec)
+	pipeExec.ID = iterActionId
+
+	pipeline,_ := db.GetPipelineById(pipelineId)
+
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline)
+	err := e.Reg(runtimePipeline)
+
+	return nil,err
 }
 
 
@@ -234,8 +255,8 @@ func ParseDagAndLayout(pipeline *db.Pipeline)([][]stage.Endpoint, []edge, error)
 			// edge exist from i+1 to j+1
 			if pipeline.StageDAG[i][j] == 1 {
 
-				startNodeId := dagMapLayout(pipeline.StageLayout,i+1,nodeNum)
-				endNodeId := dagMapLayout(pipeline.StageLayout, j+1, nodeNum)
+				startNodeId := dagMapLayout(pipeline.StageLayout,i+1)
+				endNodeId := dagMapLayout(pipeline.StageLayout, j+1)
 				startNodeX, startNodeY,_ := findNodePosition(pipeline, nodeNum, startNodeId)
 				endNodeX, endNodeY,_ := findNodePosition(pipeline, nodeNum, endNodeId)
 				// startNode endpoints
@@ -280,9 +301,10 @@ var findNodePosition = func(pipeline *db.Pipeline, nodeNum int, nodeId int64)(in
 	return -1,-1, DataError{Args: map[string]interface{}{"pipelineId":pipeline.ID,"pipelineName":pipeline.Name, "creatorName":pipeline.CreatorName}}
 }
 
-var dagMapLayout = func(layout [][]int64, index, nodeNum int) int64 {
+var dagMapLayout = func(layout [][]int64, index int) int64 {
 	var counter int
 	var nodeId int64
+	nodeNum := len(layout)
 	for i := 0; i < nodeNum; i++ {
 		for j := 0; j < nodeNum; j++ {
 			if layout[i][j] > 0 {
@@ -354,7 +376,7 @@ var makeNode = func(p *db.Pipeline, endpoints [][]stage.Endpoint)([]stage.Node, 
 	var nodes []stage.Node
 	for k,ep := range endpoints {
 		// index of the node is k+1
-		nodeId := dagMapLayout(p.StageLayout,k+1,len(p.Stages))
+		nodeId := dagMapLayout(p.StageLayout,k+1)
 		nodeX,nodeY,_ := findNodePosition(p, len(p.Stages), nodeId)
 		node := stage.Node{Id: int64(k+1), Endpoints: ep, Group: "group", Top: FirstStagePX+nodeX*StageXStep, Left: FirstStagePY+nodeY*StageYStep, StageId: nodeId}
 		// get node info(stage info)

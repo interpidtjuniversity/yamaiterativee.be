@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
+	"yama.io/yamaIterativeE/internal/iteration/step"
 	"yama.io/yamaIterativeE/internal/util/guc"
 )
 
@@ -17,20 +18,70 @@ const (
 	Canceled
 )
 
-/** business mapping from db.IterationAction to RuntimePipeline */
-type RuntimePipeline struct {
-	ID         int64
-	PipeLineId int64
-	Stages     []int64
-	StageDAG   [][]int64
-	Buckets    []*stage.RuntimeStage
-	Status     RuntimePipelineStatus
+var e Executor
+
+func init() {
+	e := Executor{}
+	e.Init(guc.Config{
+		MaxWorkers: 10,
+	})
 }
 
-func FromIterationAction(action db.IterationAction, pipeline db.Pipeline) RuntimePipeline {
-	r := &RuntimePipeline{ID: action.ID, PipeLineId: action.PipeLineId, Stages: pipeline.Stages, StageDAG: pipeline.StageDAG}
+/** business mapping from db.IterationAction to RuntimePipeline */
+type RuntimePipeline struct {
+	ID          int64
+	PipeLineId  int64
+	NodeNum     int
+	StagesIndex []int
+	StageDAG    [][]int64
+	StageLayout [][]int64
+	Buckets     []*stage.RuntimeStage
+	Status      RuntimePipelineStatus
+	ExecPath    string
+	Channel     chan {}interface
+}
+
+// before this, insure already have a IterationAction
+func FromIterationAction(action db.IterationAction, pipeline db.Pipeline) *RuntimePipeline {
+	r := &RuntimePipeline{ID: action.ID, PipeLineId: action.PipeLineId, StageDAG: pipeline.StageDAG, StageLayout: pipeline.StageLayout, NodeNum: len(pipeline.StageDAG)}
 	r.Buckets = make([]*stage.RuntimeStage, GetDAGMaxParallel(pipeline.StageDAG))
-	return *r
+	r.StagesIndex = make([]int, r.NodeNum)
+	for i := 0; i < r.NodeNum; i++ {
+		// let 0,1,2,3,4,5,6,7....
+		r.StagesIndex[i] = i
+	}
+
+	r.BuildRuntimeState()
+	return r
+}
+
+func (rp *RuntimePipeline) BuildRuntimeState() {
+	m := make(map[int]int)
+	height := len(rp.StageDAG)
+	width := len(rp.StageDAG[0])
+	for i := 0; i < height; i++ {
+		for j := 0; j < width; j++ {
+			if rp.StageDAG[i][j] == 1 {
+				m[j]++
+			}
+		}
+	}
+	for _, v := range rp.StagesIndex {
+		if m[v] == 0 {
+			// 1.query stage
+			// 2.pre build stage_exec(RuntimeStage)
+			// 3.store the RuntimeStage in a empty slot
+			stageId := dagMapLayout(rp.StageLayout, v+1)
+			s, _ := db.GetStageById(stageId)
+			runtimeStage := stage.FromStage(rp, s)
+			for i := 0; i<len(rp.Buckets); i++{
+				if rp.Buckets[i] == nil {
+					rp.Buckets[i] = runtimeStage
+				}
+			}
+
+		}
+	}
 }
 
 func GetDAGMaxParallel(dag [][]int64) (res int) {
@@ -94,9 +145,13 @@ func GetDAGMaxParallel(dag [][]int64) (res int) {
 
 
 type Executor struct {
-	guc.TaskPool
-	actions list.List
-	Channel chan *RuntimePipeline
+	guc.BaseTaskPool
+	actions *list.List
+}
+
+func (e *Executor) Init(config guc.Config) {
+	e.BaseTaskPool.Init(config)
+	e.actions = list.New()
 }
 
 func (e *Executor) Reg(bean interface{}) error  {
@@ -104,13 +159,14 @@ func (e *Executor) Reg(bean interface{}) error  {
 	if ok{
 		e.Lock.Lock()
 		defer e.Lock.Unlock()
+		runtime.Status = Init
 		e.actions.PushBack(&runtime)
 		return nil
 	}
 	return RegError{Args: map[string]interface{}{"bean": bean}}
 }
 
-func (e *Executor) UnReg(bean interface{}, origin, target RuntimePipelineStatus) error {
+func (e *Executor) UnReg(bean interface{}) error {
 	action,ok := bean.(RuntimePipeline)
 	if ok{
 		var p *RuntimePipeline
@@ -118,9 +174,14 @@ func (e *Executor) UnReg(bean interface{}, origin, target RuntimePipelineStatus)
 		for i:=e.actions.Front(); i!=nil; i=i.Next() {
 			element=i
 			p,_ = (i.Value).(*RuntimePipeline)
-			if p.ID == action.ID && p.Status == origin{
-				// update
-				p.Status = target
+			if p.ID == action.ID {
+				switch p.Status {
+				case Running:
+					p.Status=Canceled
+					break
+				default:
+					return UnRegError{Args: map[string]interface{}{"bean": bean}}
+				}
 				break
 			}
 		}
@@ -130,7 +191,7 @@ func (e *Executor) UnReg(bean interface{}, origin, target RuntimePipelineStatus)
 		   2. git commit refresh the runtime
 		   3. runtime successful executed
 		*/
-		if p == nil || p.Status != target{
+		if p == nil {
 			return UnRegError{Args: map[string]interface{}{"bean": bean}}
 		}
 
@@ -147,7 +208,7 @@ func (e *Executor) UnReg(bean interface{}, origin, target RuntimePipelineStatus)
 }
 
 func (e *Executor) Start() {
-	e.TaskPool.Start()
+	e.BaseTaskPool.Start()
 	go func() {
 		e.Lock.Lock()
 		var status RuntimePipelineStatus
@@ -157,7 +218,7 @@ func (e *Executor) Start() {
 			status = p.Status
 			if status == Init {
 				// schedule it!
-
+				e.schedule(p)
 				// then
 				p.Status = Running
 			}
@@ -170,10 +231,29 @@ func (e *Executor) Start() {
 }
 
 func (e *Executor) ShutDown()  {
-	e.TaskPool.ShutDown()
+	e.BaseTaskPool.ShutDown()
 	/**
 		close two goroutine and channel
 	*/
+}
+
+func (e *Executor) schedule(rp *RuntimePipeline) {
+	for i := 0; i < len(rp.Buckets); i++ {
+		if rp.Buckets[i] != nil {
+			stageExec := db.StageExec{ActId: rp.ID, StageId: rp.Buckets[i].StageId, ExecPath: rp.ExecPath}
+			stageExecId, _ := db.InsertStageExec(stageExec)
+			rp.Buckets[i].Id = stageExecId
+			for _,s := range rp.Buckets[i].Steps {
+				s.StageExecId = stageExecId
+				e.sendTask(s)
+			}
+		}
+	}
+}
+
+func (e *Executor) sendTask(s *step.RuntimeStep) {
+	task := interface{}(*s).(guc.Task)
+	e.GetWorker().Channel <- &task
 }
 
 /**

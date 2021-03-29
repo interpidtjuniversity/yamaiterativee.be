@@ -1,5 +1,7 @@
 package db
 
+import "xorm.io/builder"
+
 type Step struct {
 	ID          int64    `xorm:"id autoincr pk"`
 	Name        string   `xorm:"name"`
@@ -9,4 +11,13 @@ type Step struct {
 	Command     string   `xorm:"command"`
 	Args        []string `xorm:"args" json:"-"`
 	IsPublic    bool     `xorm:"is_public"`
+}
+
+func BranchQueryStepsByIds(stageId []int64) ([]*Step, error) {
+	var steps []*Step
+	err := x.Where(builder.In("id", stageId)).Find(steps)
+	if err != nil {
+		return nil, err
+	}
+	return steps, nil
 }

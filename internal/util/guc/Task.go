@@ -3,7 +3,7 @@ package guc
 type Task interface {
 	Run() (interface{}, error)
 	Success(result interface{})
-	Fail()
+	Failure()
 	Cancel()
 	IsCancel() bool
 }

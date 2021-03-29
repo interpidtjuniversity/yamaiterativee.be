@@ -21,3 +21,12 @@ func BranchQueryPipelineByIds(ids []int64) ([]*Pipeline, error) {
 	}
 	return pipelines, nil
 }
+
+func GetPipelineById(id int64) (*Pipeline, error) {
+	var pipeline *Pipeline
+	has, err := x.ID(id).Get(pipeline)
+	if !has {
+		return nil, err
+	}
+	return pipeline, nil
+}

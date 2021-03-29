@@ -15,6 +15,7 @@ type IterationAction struct {
 	AvatarSrc       string `xorm:"avatar_src"`
 	ExtInfo         string `xorm:"ext_info"`
 	ActionGroupInfo string `xorm:"action_group_info"`
+	ExecPath        string `xorm:"exec_path"`
 }
 
 func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
@@ -24,6 +25,11 @@ func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
 		return nil, err
 	}
 	return actions, nil
+}
+
+func InsertIterationAction(action IterationAction) (int64, error) {
+	id, err := x.Insert(action)
+	return id, err
 }
 
 type IterationMergeRequest struct {
