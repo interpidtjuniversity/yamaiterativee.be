@@ -14,17 +14,17 @@ type stageInfo struct {
 }
 
 type Node struct {
-	StageIdExecId string     `json:"stageId_execId"`
-	StageId       int64      `json:"stageId"`
-	ExecId        int64      `json:"execId"`
-	Id            int64      `json:"id"`
-	Label         string     `json:"label"`
-	ClassName     string     `json:"className"`
-	IconType      string     `json:"iconType"`
-	Top           int        `json:"top"`
-	Left          int        `json:"left"`
-	Group         string     `json:"group"`
-	Endpoints     []Endpoint `json:"endpoints"`
+	ActionIdStageId string     `json:"actionId_stageId"`
+	StageId         int64      `json:"stageId"`
+	ActionId        int64      `json:"actionId"`
+	Id              int64      `json:"id"`
+	Label           string     `json:"label"`
+	ClassName       string     `json:"className"`
+	IconType        string     `json:"iconType"`
+	Top             int        `json:"top"`
+	Left            int        `json:"left"`
+	Group           string     `json:"group"`
+	Endpoints       []Endpoint `json:"endpoints"`
 }
 //
 type Endpoint struct {

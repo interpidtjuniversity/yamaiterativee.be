@@ -86,6 +86,9 @@ func runWeb(c *cli.Context) error {
 					m.Get("", stage.StageInfo)
 					m.Get("/:exec", stage.StageExecInfo)
 				})
+				m.Group("/new", func() {
+					m.Get("/:pipelineId", pipeline.StartPipeline)
+				})
 			})
 
 			m.Group("/action", func() {

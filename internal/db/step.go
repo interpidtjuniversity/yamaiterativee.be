@@ -15,7 +15,7 @@ type Step struct {
 
 func BranchQueryStepsByIds(stageId []int64) ([]*Step, error) {
 	var steps []*Step
-	err := x.Where(builder.In("id", stageId)).Find(steps)
+	err := x.Where(builder.In("id", stageId)).Find(&steps)
 	if err != nil {
 		return nil, err
 	}

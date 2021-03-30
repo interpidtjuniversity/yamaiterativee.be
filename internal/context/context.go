@@ -70,7 +70,7 @@ func (c *Context) FormErr(names ...string) {
 	}
 }
 
-// UserID returns ID of current logged in user.
+// UserID returns Id of current logged in user.
 // It returns 0 if visitor is anonymous.
 func (c *Context) UserID() int64 {
 	return c.UserId

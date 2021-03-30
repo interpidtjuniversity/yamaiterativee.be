@@ -132,19 +132,18 @@ type groupOptions struct {
 func StartPipeline(c *context.Context) ([]byte, error) {
 	// get pipeline
 	pipelineId := c.ParamsInt64(":pipelineId")
-	actorName := c.Params("actorName")
-	envGroup := c.ParamsInt64("envGroup")
-	actionInfo := c.Params("actionInfo")
-	avatarSrc := c.Params("avatarSrc")
-	extInfo := c.Params("extInfo")
-	actionGroupInfo := c.Params("actionGroupInfo")
+	actorName := c.Query("actorName")
+	envGroup := c.QueryInt64("envGroup")
+	actionInfo := c.Query("actionInfo")
+	avatarSrc := c.Query("avatarSrc")
+	extInfo := c.Query("extInfo")
+	actionGroupInfo := c.Query("actionGroupInfo")
 
 
 	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: "Init",
 		ActionGroupInfo: actionGroupInfo, ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExtInfo: extInfo, ExecPath: "/root/yamaIterativeE/yamaIterativeE-pipeline-exec",
 	}
-	iterActionId, _ := db.InsertIterationAction(pipeExec)
-	pipeExec.ID = iterActionId
+	_, _ = db.InsertIterationAction(&pipeExec)
 
 	pipeline,_ := db.GetPipelineById(pipelineId)
 
@@ -210,13 +209,9 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			stageIds = append(stageIds, node.Id)
 		}
 		// agg StageExec and Stage
-		stageExecs,_ := db.BranchQueryStageExec(action.ID, stageIds)
+		// stageExecs,_ := db.BranchQueryStageExec(action.Id, stageIds)
 		stages,_ := db.BranchQueryStage(stageIds)
-		stageExecMap := make(map[int64]*db.StageExec)
 		stageMap := make(map[int64]*db.Stage)
-		for _,exec := range stageExecs {
-			stageExecMap[exec.StageId] = exec
-		}
 		for _,s :=range stages {
 			stageMap[s.ID] = s
 		}
@@ -225,10 +220,10 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			pipelineInfoTemplate.Nodes[i].ClassName = stageMap[pipelineInfoTemplate.Nodes[i].Id].ClassName
 			pipelineInfoTemplate.Nodes[i].Group = stageMap[pipelineInfoTemplate.Nodes[i].Id].Group
 			pipelineInfoTemplate.Nodes[i].Label = stageMap[pipelineInfoTemplate.Nodes[i].Id].Name
-			pipelineInfoTemplate.Nodes[i].ExecId = stageExecMap[pipelineInfoTemplate.Nodes[i].Id].ID
-			pipelineInfoTemplate.Nodes[i].StageIdExecId = fmt.Sprintf("%d_%d",pipelineInfoTemplate.Nodes[i].Id, stageExecMap[pipelineInfoTemplate.Nodes[i].Id].ID)
+			pipelineInfoTemplate.Nodes[i].ActionId = action.Id
+			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d",pipelineInfoTemplate.Nodes[i].Id, action.Id)
 		}
-		pipelineInfoTemplate.PipelineId=action.ID
+		pipelineInfoTemplate.PipelineId=action.Id
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo
 		pipelineInfoTemplate.AvatarSrc=action.AvatarSrc
 		pipelineInfoTemplate.ExtInfo=action.ExtInfo

@@ -3,7 +3,7 @@ package db
 import "xorm.io/builder"
 
 type StageExec struct {
-	ID             int64  `xorm:"id autoincr pk"`
+	Id             int64  `xorm:"id autoincr pk"`
 	ActId          int64  `xorm:"act_id"`
 	StageId        int64  `xorm:"stage_id"`
 	ExecPath       string `xorm:"exec_path"`
@@ -20,7 +20,7 @@ func BranchQueryStageExec(iterationActionId int64, stageIds []int64)([]*StageExe
 	return execs, nil
 }
 
-func InsertStageExec(exec StageExec) (int64, error){
+func InsertStageExec(exec *StageExec) (int64, error){
 	id, err := x.Insert(exec)
 	return id, err
 }

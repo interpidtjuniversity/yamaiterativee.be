@@ -11,15 +11,15 @@ func Test_UserInsert(t *testing.T) {
 	NewEngine()
 
 	user := User{Name: "tj-1752486-cy",LowerName: "tj-1752486-cy", IsActive: 1, Email: "120571672@qq.com", Passwd: "cy19991116"}
-	if _, err := x.Insert(user); err!=nil{
-		fmt.Print(err)
-	}
+	_,_= x.Insert(&user)
+	fmt.Print(user.Id)
+	fmt.Print(user.Id)
 }
 
 func Test_UserQuery(t *testing.T) {
 	NewEngine()
 
-	//user := &User{ID: 0}
+	//user := &User{Id: 0}
 	//if _,err := x.Get(user); err!=nil {
 	//	fmt.Print(err)
 	//}
@@ -43,7 +43,7 @@ func Test_BranchQuery(t *testing.T) {
     var ids []int64
     stream, _ := util.New(users)
     err = stream.Map(func(user *User)int64 {
-    	return user.ID
+    	return user.Id
 	}).ToSlice(&ids)
 
 	if err!=nil {

@@ -29,8 +29,7 @@ type BaseTaskPool struct {
 func (tp *BaseTaskPool) Init(config Config) {
 	tp.Workers = make([]*Worker, config.MaxWorkers)
 	for i := 0; i < config.MaxWorkers; i++ {
-		tp.Workers[i].Channel = make(chan *Task)
-		tp.Workers[i].Close = make(chan bool)
+		tp.Workers[i] = &Worker{Channel: make(chan *Task), Close:make(chan bool)}
 	}
 }
 

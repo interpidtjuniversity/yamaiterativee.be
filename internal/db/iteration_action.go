@@ -5,7 +5,7 @@ import (
 )
 
 type IterationAction struct {
-	ID              int64  `xorm:"id autoincr pk"`
+	Id              int64  `xorm:"id autoincr pk"`
 	ActorName       string `xorm:"actor_name"`
 	FinallyPass     bool   `xorm:"finally_pass" json:"-"`
 	PipeLineId      int64  `xorm:"pipeline_id"`
@@ -27,7 +27,7 @@ func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
 	return actions, nil
 }
 
-func InsertIterationAction(action IterationAction) (int64, error) {
+func InsertIterationAction(action *IterationAction) (int64, error) {
 	id, err := x.Insert(action)
 	return id, err
 }
