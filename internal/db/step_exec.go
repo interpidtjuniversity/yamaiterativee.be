@@ -18,3 +18,8 @@ func PassStepExec(id int64) error{
 	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": true})
 	return err
 }
+
+func FailStepExec(id int64) error{
+	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": false})
+	return err
+}

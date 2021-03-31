@@ -91,6 +91,56 @@ type pipelineInfo struct {
 	Groups     []group      `json:"groups"`
 }
 
+func (pi pipelineInfo)Clone() pipelineInfo  {
+	clone := pipelineInfo{}
+	clone.PipelineId = pi.PipelineId
+	clone.AvatarSrc = pi.AvatarSrc
+	clone.ActionInfo = pi.ActionInfo
+	clone.Nodes = make([]stage.Node, len(pi.Nodes))
+	clone.Edges = make([]edge, len(pi.Edges))
+	clone.Groups = make([]group, len(pi.Groups))
+
+	for i:=0; i<len(pi.Nodes); i++ {
+		clone.Nodes[i].StageId = pi.Nodes[i].StageId
+		clone.Nodes[i].Id = pi.Nodes[i].Id
+		clone.Nodes[i].ActionId = pi.Nodes[i].ActionId
+		clone.Nodes[i].Group = pi.Nodes[i].Group
+		clone.Nodes[i].Label = pi.Nodes[i].Label
+		clone.Nodes[i].ClassName = pi.Nodes[i].ClassName
+		clone.Nodes[i].IconType = pi.Nodes[i].IconType
+		clone.Nodes[i].ActionIdStageId = pi.Nodes[i].ActionIdStageId
+		clone.Nodes[i].Left = pi.Nodes[i].Left
+		clone.Nodes[i].Top = pi.Nodes[i].Top
+		clone.Nodes[i].Endpoints = make([]stage.Endpoint, len(pi.Nodes[i].Endpoints))
+		for j := 0; j < len(pi.Nodes[i].Endpoints); j++ {
+			clone.Nodes[i].Endpoints[j].Id = pi.Nodes[i].Endpoints[j].Id
+			clone.Nodes[i].Endpoints[j].Pos = pi.Nodes[i].Endpoints[j].Pos
+			clone.Nodes[i].Endpoints[j].Orientation = pi.Nodes[i].Endpoints[j].Orientation
+		}
+	}
+	for i:=0; i<len(pi.Edges); i++ {
+		clone.Edges[i].TargetNode = pi.Edges[i].TargetNode
+		clone.Edges[i].Target = pi.Edges[i].Target
+		clone.Edges[i].SourceNode = pi.Edges[i].SourceNode
+		clone.Edges[i].Source = pi.Edges[i].Source
+		clone.Edges[i].ShapeType = pi.Edges[i].ShapeType
+		clone.Edges[i].Type = pi.Edges[i].Type
+		clone.Edges[i].Arrow = pi.Edges[i].Arrow
+		clone.Edges[i].ArrowPosition = pi.Edges[i].ArrowPosition
+	}
+	for i:=0; i<len(pi.Groups); i++ {
+		clone.Groups[i].Id = pi.Groups[i].Id
+		clone.Groups[i].Top = pi.Groups[i].Top
+		clone.Groups[i].Left = pi.Groups[i].Left
+		clone.Groups[i].Height = pi.Groups[i].Height
+		clone.Groups[i].Width = pi.Groups[i].Width
+		clone.Groups[i].Resize = pi.Groups[i].Resize
+		clone.Groups[i].Draggable = pi.Groups[i].Draggable
+		clone.Groups[i].Options = groupOptions{Title: pi.Groups[i].Options.Title}
+	}
+	return clone
+}
+
 type edge struct {
 	Source        string  `json:"source"`
 	Target        string  `json:"target"`
@@ -140,7 +190,7 @@ func StartPipeline(c *context.Context) ([]byte, error) {
 	actionGroupInfo := c.Query("actionGroupInfo")
 
 
-	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: "Init",
+	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
 		ActionGroupInfo: actionGroupInfo, ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExtInfo: extInfo, ExecPath: "/root/yamaIterativeE/yamaIterativeE-pipeline-exec",
 	}
 	_, _ = db.InsertIterationAction(&pipeExec)
@@ -202,7 +252,7 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	var pipelineInfos []pipelineInfo
 	// create completely pipelineInfo with pipeline template and envActions
 	stream.ForEach(func(action *db.IterationAction) {
-		pipelineInfoTemplate := pipelineInfoMap[action.PipeLineId]
+		pipelineInfoTemplate := pipelineInfoMap[action.PipeLineId].Clone()
 		// call stageInfo with actId and stageId
 		var stageIds []int64
 		for _,node := range pipelineInfoTemplate.Nodes {
@@ -220,8 +270,8 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			pipelineInfoTemplate.Nodes[i].ClassName = stageMap[pipelineInfoTemplate.Nodes[i].Id].ClassName
 			pipelineInfoTemplate.Nodes[i].Group = stageMap[pipelineInfoTemplate.Nodes[i].Id].Group
 			pipelineInfoTemplate.Nodes[i].Label = stageMap[pipelineInfoTemplate.Nodes[i].Id].Name
-			pipelineInfoTemplate.Nodes[i].ActionId = action.Id
-			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d",pipelineInfoTemplate.Nodes[i].Id, action.Id)
+			pipelineInfoTemplate.Nodes[i].ActionId = (*action).Id
+			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d", (*action).Id, pipelineInfoTemplate.Nodes[i].Id)
 		}
 		pipelineInfoTemplate.PipelineId=action.Id
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo

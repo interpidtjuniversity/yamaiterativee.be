@@ -2,10 +2,17 @@ package step
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"yama.io/yamaIterativeE/internal/db"
+)
+
+type RuntimeStepState int
+const (
+	Init RuntimeStepState = iota
+	Running
+	Finish
+	Failure
 )
 
 /** business mapping from db.StepExec to RuntimeStep and task abstract*/
@@ -18,13 +25,15 @@ type RuntimeStep struct {
 	PipelineId        int64
 	StageIndex        int
 
-	IsCanceled        bool
-	LogPath           string
-	ExecPath          string
-	IsPassed          bool
-	Command           string
-	Args              []string
-	Channel           chan Message
+	IsCanceled     bool
+	LogPath        string
+	ExecPath       string
+	IsPassed       bool
+	Command        string
+	Args           []string
+	SuccessChannel chan Message
+	FailureChannel chan Message
+	State          RuntimeStepState
 }
 
 // message when a step finish
@@ -40,6 +49,7 @@ type Message struct {
 
 func (t *RuntimeStep) Run() (interface{}, error) {
 	// write db
+	t.State = Running
 	step := db.StepExec{StepId: t.StepId, StageExecId: t.StageExecId, LogPath: t.LogPath, ExecPath: t.ExecPath}
 	_, _ = db.InsertStepExec(&step)
 	t.Id = step.ID
@@ -55,8 +65,8 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 }
 
 func (t *RuntimeStep) Success(result interface{}) {
-	fmt.Print(fmt.Sprintf("channel length is:%d\n",len(t.Channel)))
-	t.Channel <- Message{
+	t.State = Finish
+	t.SuccessChannel <- Message{
 		StageIndex: t.StageIndex,
 		PipelineId: t.PipelineId,
 		StageExecId: t.StageExecId,
@@ -70,7 +80,18 @@ func (t *RuntimeStep) Success(result interface{}) {
 }
 
 func (t *RuntimeStep) Failure() {
-
+	t.State = Failure
+	t.FailureChannel <- Message{
+		StageIndex: t.StageIndex,
+		PipelineId: t.PipelineId,
+		StageExecId: t.StageExecId,
+		IterationActionId: t.IterationActionId,
+		StepId: t.StepId,
+		Id: t.Id,
+		StageId: t.StageId,
+	}
+	// update db
+	db.FailStepExec(t.Id)
 }
 
 func (t *RuntimeStep) Cancel() {

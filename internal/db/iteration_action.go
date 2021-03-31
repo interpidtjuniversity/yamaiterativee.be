@@ -32,6 +32,11 @@ func InsertIterationAction(action *IterationAction) (int64, error) {
 	return id, err
 }
 
+func UpdateIterationAction(id int64, state string) error {
+	_, err := x.Table(&IterationAction{}).ID(id).Update(map[string]interface{}{"state": state})
+	return err
+}
+
 type IterationMergeRequest struct {
 	IterationAction
 	SponsorPassId []int64  `xorm:"sponsor_pass_id" json:"-"`

@@ -8,9 +8,11 @@ import (
 )
 
 type stageInfo struct {
-	Title string `json:"title"`
-	Img   string `json:"img"`
-	Index int64  `json:"index"`
+	Title  string `json:"title"`
+	Img    string `json:"img"`
+	Index  int64  `json:"index"`
+	// if is running, then axios pre 5 seconds task to query it until is failed||succeed
+	Status string `json:"status"`
 }
 
 type Node struct {
@@ -146,8 +148,9 @@ func StageExecInfo(c *context.Context) {
 }
 
 type stepStatus struct {
-	Type  string `json:"type"`
-	Color string `json:"color"`
+	Type   string `json:"type"`
+	Color  string `json:"color"`
+	Status string `json:"status"`
 }
 
 

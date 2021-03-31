@@ -6,7 +6,9 @@ import (
 )
 
 type TaskPool interface {
+	//reg a task and wait is execute
 	Reg(bean interface{}) error
+	//unReg a task and cancel it's executing if in running, if init just remove if
 	UnReg(bean interface{}) error
 	ShutDown()
 	Start()
