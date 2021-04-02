@@ -6,6 +6,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
+	"yama.io/yamaIterativeE/internal/iteration/step"
 	"yama.io/yamaIterativeE/internal/util"
 )
 
@@ -89,6 +90,7 @@ type pipelineInfo struct {
 	Nodes      []stage.Node `json:"nodes"`
 	Edges      []edge       `json:"edges"`
 	Groups     []group      `json:"groups"`
+	State      string       `json:"state"`
 }
 
 func (pi pipelineInfo)Clone() pipelineInfo  {
@@ -96,6 +98,7 @@ func (pi pipelineInfo)Clone() pipelineInfo  {
 	clone.PipelineId = pi.PipelineId
 	clone.AvatarSrc = pi.AvatarSrc
 	clone.ActionInfo = pi.ActionInfo
+	clone.State = pi.State
 	clone.Nodes = make([]stage.Node, len(pi.Nodes))
 	clone.Edges = make([]edge, len(pi.Edges))
 	clone.Groups = make([]group, len(pi.Groups))
@@ -277,6 +280,7 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo
 		pipelineInfoTemplate.AvatarSrc=action.AvatarSrc
 		pipelineInfoTemplate.ExtInfo=action.ExtInfo
+		pipelineInfoTemplate.State = action.State
 		// only one group exist so we get index of 0
 		pipelineInfoTemplate.Groups[0].Options.Title = action.ActionGroupInfo
 
@@ -284,6 +288,92 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	})
 
 	data,err := json.Marshal(pipelineInfos)
+	return data, err
+}
+
+func IterActionState(c *context.Context) ([]byte, error) {
+	actionId := c.ParamsInt64(":actionId")
+	var action *RuntimePipeline
+	for i:=e.actions.Front(); i!=nil; i=i.Next() {
+		cur := (i.Value).(*RuntimePipeline)
+		if cur.ID == actionId {
+			action = cur
+		}
+	}
+	actionState := Unknown
+	if action != nil {
+		actionState = action.Status
+	}else {
+		iterationAction, _ := db.GetIterActionById(actionId)
+		actionState = actionState.FromString(iterationAction.State)
+	}
+	return json.Marshal(actionState.ToString())
+}
+
+func IterStageState(c *context.Context) ([]byte, error) {
+	// iterationId, stageId
+	actionId := c.ParamsInt64(":actionId")
+	stageId := c.ParamsInt64(":stageId")
+	// 1.search e.actions
+	// 2.query db
+	var action *RuntimePipeline
+	for i := e.actions.Front(); i != nil; i=i.Next() {
+		cur := (i.Value).(*RuntimePipeline)
+		if cur.ID == actionId {
+			// cur is a pointer, insure keeping is read only
+			action = cur
+			break
+		}
+	}
+
+	stageState := stage.Unknown
+	if action != nil {
+		for i := 0; i < len(action.Buckets); i++ {
+			if action.Buckets[i].StageId == stageId {
+				stageState = action.Buckets[i].State
+				break
+			}
+		}
+
+	} else{
+		// compatible time delay
+		// query from db
+		stageExec,_ := db.QueryStageExec(actionId, stageId)
+		stageState = stageState.FromString(stageExec.State)
+	}
+
+	data, err := json.Marshal(stageState.ToString())
+
+	return data,err
+}
+
+func IterStepState(c *context.Context) ([]byte, error) {
+	actionId := c.ParamsInt64(":actionId")
+	//stageId := c.ParamsInt64(":stageId")
+	stepId := c.ParamsInt64(":stepId")
+
+	var action *RuntimePipeline
+	runtimeStepState := step.Unknown
+
+	for i := e.actions.Front(); i != nil; i=i.Next() {
+		cur := (i.Value).(*RuntimePipeline)
+		if cur.ID == actionId {
+			// cur is a pointer, insure keeping is read only
+			action = cur
+			break
+		}
+	}
+
+	if action != nil {
+		for j:=0; j<len(action.Buckets); j++ {
+			for k:=0; k<len(action.Buckets[j].Steps); k++ {
+				if action.Buckets[j].Steps[k].StepId == stepId {
+					runtimeStepState = action.Buckets[j].Steps[k].State
+				}
+			}
+		}
+	}
+	data, err := json.Marshal(runtimeStepState.ToString())
 	return data, err
 }
 

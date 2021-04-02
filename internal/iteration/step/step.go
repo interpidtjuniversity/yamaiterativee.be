@@ -12,6 +12,13 @@ const (
 	StrBase     = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz"
 )
 
+type InfoStep struct {
+	StepId     int64  `json:"stepId"`
+	Title      string `json:"title"`
+	Image      string `json:"image"`
+	Index      int    `json:"index"`
+}
+
 func init() {
 	rand.Seed(time.Now().UnixNano())
 }

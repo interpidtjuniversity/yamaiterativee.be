@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/iteration/stage"
 )
 
 func Test_PipelineParse(t *testing.T) {
@@ -29,4 +30,13 @@ func Test_PipelineParse(t *testing.T) {
 	}}
 	endpoints,_,_ := ParseDagAndLayout(pipeline)
 	fmt.Print(json.Marshal(endpoints))
+}
+
+
+func Test_StageRuntimeStateFromString(t *testing.T) {
+	var srs stage.RuntimeStageState
+
+	srs = srs.FromString("Finish")
+
+	fmt.Print(srs)
 }

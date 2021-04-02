@@ -72,29 +72,39 @@ func runWeb(c *cli.Context) error {
 
 		m.Group("/iteration", func() {
 			m.Get("/ping", stage.Ping)
-
 			m.Group("/:iterationId", func() {
 				m.Get("/info", stage.IterInfo)
-				m.Group("/:envType", func() {
-					m.Get("", pipeline.IterPipelineInfo)
-					m.Get("/info", stage.IterEnvInfo)
+				m.Group("/envType", func() {
+					m.Group("/:envType", func() {
+						m.Get("", pipeline.IterPipelineInfo)
+						m.Get("/info", stage.IterEnvInfo)
+					})
 				})
-			})
+				m.Group("/action", func() {
+					m.Group("/envType", func() {
+						m.Get("/:envType", stage.IterActionInfo)
+					})
+					m.Group("/:actionId", func() {
+						m.Group("/stage", func() {
+							m.Get("", pipeline.IterActionState)
+							m.Get("/:stageId", stage.IterStageInfo)
+							m.Get("/:stageId/state", pipeline.IterStageState)
+							m.Group("/step", func() {
+								m.Get("/:stepId", stage.StageExecInfo)
+								m.Get("/:stepId/state", pipeline.IterStepState)
+							})
+						})
+					})
+					m.Group("/new", func() {
+						m.Get("/:pipelineId", pipeline.StartPipeline)
+					})
+				})
 
-			m.Group("/pipeline", func() {
-				m.Group("/:stage", func() {
-					m.Get("", stage.StageInfo)
-					m.Get("/:exec", stage.StageExecInfo)
-				})
-				m.Group("/new", func() {
-					m.Get("/:pipelineId", pipeline.StartPipeline)
-				})
-			})
-
-			m.Group("/action", func() {
-				m.Get("/:envType", stage.IterActionInfo)
 			})
 		})
+
+
+
 	},
 		context.Contexter(),
 	)

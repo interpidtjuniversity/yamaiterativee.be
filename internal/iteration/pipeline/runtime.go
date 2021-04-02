@@ -21,6 +21,7 @@ const (
 	Finish
 	Canceled
 	Error
+	Unknown
 )
 func (rps RuntimePipelineState)ToString() string {
 	switch rps {
@@ -36,6 +37,23 @@ func (rps RuntimePipelineState)ToString() string {
 		return "Error"
 	}
 	return ""
+}
+
+func (rps RuntimePipelineState) FromString(s string) RuntimePipelineState {
+	switch s {
+	case "Init":
+		return Init
+	case "Running":
+		return Running
+	case "Finish":
+		return Finish
+	case "Canceled":
+		return Canceled
+	case "Error":
+		return Error
+	default:
+		return Unknown
+	}
 }
 
 var e *Executor
@@ -379,7 +397,7 @@ func (e *Executor) schedule(rp *RuntimePipeline) {
 	for i := 0; i < len(rp.Buckets); i++ {
 		//stage is ready to execute
 		if rp.Buckets[i].State == stage.Ready {
-			stageExec := db.StageExec{ActId: rp.ID, StageId: rp.Buckets[i].StageId, ExecPath: rp.ExecPath}
+			stageExec := db.StageExec{ActId: rp.ID, StageId: rp.Buckets[i].StageId, ExecPath: rp.ExecPath, State: stage.Running.ToString()}
 			_, _ = db.InsertStageExec(&stageExec)
 			rp.Buckets[i].Id = stageExec.Id
 			rp.Buckets[i].State = stage.Running
@@ -397,11 +415,17 @@ func (e *Executor) sendTask(s *step.RuntimeStep) {
 }
 
 /**
-	1. if a Task is running just wait it down and clear it's log
-    2. write db
+	1. update RuntimePipeline state and RuntimeStage state
+    2. RuntimeStep state will be update earliest
 */
 func Handle(rp *RuntimePipeline) error{
-	return db.UpdateIterationAction(rp.ID, rp.Status.ToString())
+	db.UpdateIterationAction(rp.ID, rp.Status.ToString())
+	for i := 0; i < len(rp.Buckets); i++ {
+		if rp.Buckets[i].State.CanUpdate() {
+			db.UpdateStageExecState(rp.Buckets[i].Id, rp.Buckets[i].State.ToString())
+		}
+	}
+	return nil
 }
 
 type RegError struct {

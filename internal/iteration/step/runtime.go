@@ -13,7 +13,23 @@ const (
 	Running
 	Finish
 	Failure
+	Unknown
 )
+
+func (r RuntimeStepState) ToString() string {
+	switch r {
+	case Init:
+		return "Init"
+	case Running:
+		return "Running"
+	case Finish:
+		return "Finish"
+	case Failure:
+		return "Failure"
+	default:
+		return "Unknown"
+	}
+}
 
 /** business mapping from db.StepExec to RuntimeStep and task abstract*/
 type RuntimeStep struct {
@@ -61,6 +77,10 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 	commend.Stdout = log
 	commend.Stderr = log
 	err := commend.Run()
+	if err != nil {
+		return nil, err
+	}
+	err = commend.Wait()
 	return nil, err
 }
 

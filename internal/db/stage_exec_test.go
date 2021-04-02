@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"testing"
 )
 
@@ -43,4 +44,11 @@ func Test_RunStage(t *testing.T) {
 	for _, v := range preStageExecs {
 		x.Insert(v)
 	}
+}
+
+
+func Test_QueryStageExec(t *testing.T) {
+	NewEngine()
+	stageExec, _ := QueryStageExec(18,7)
+	fmt.Print(*stageExec)
 }

@@ -5,15 +5,10 @@ import (
 	"fmt"
 	"sync"
 	"yama.io/yamaIterativeE/internal/context"
+	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/iteration/step"
 )
 
-type stageInfo struct {
-	Title  string `json:"title"`
-	Img    string `json:"img"`
-	Index  int64  `json:"index"`
-	// if is running, then axios pre 5 seconds task to query it until is failed||succeed
-	Status string `json:"status"`
-}
 
 type Node struct {
 	ActionIdStageId string     `json:"actionId_stageId"`
@@ -66,80 +61,19 @@ func IterInfo(c *context.Context) []byte {
 
 }
 
-func StageInfo(c *context.Context) []byte{
-	stageId := c.ParamsInt64(":stage")
+func IterStageInfo(c *context.Context) ([]byte, error){
+	stageId := c.ParamsInt64(":stageId")
 
-	var code_review []stageInfo
-	var conflict_detect []stageInfo
-	var code_scan []stageInfo
-	var pre_compile []stageInfo
-	var merge []stageInfo
-	var compile []stageInfo
-	var quality_detect []stageInfo
-	var server_change []stageInfo
-	var image_build []stageInfo
-	var release []stageInfo
-
-	code_review = append(code_review, stageInfo{Title: "孙武", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 0})
-	code_review = append(code_review, stageInfo{Title: "孔子", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 1})
-
-	conflict_detect = append(conflict_detect, stageInfo{Title: "代码预合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png", Index: 0})
-
-	code_scan = append(code_scan, stageInfo{Title: "静态扫描", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-	code_scan = append(code_scan, stageInfo{Title: "PMD", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
-
-	pre_compile = append(pre_compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-
-	merge = append(merge, stageInfo{Title: "代码合并", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-
-	compile = append(compile, stageInfo{Title: "mvn compile", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-
-	quality_detect = append(quality_detect, stageInfo{Title: "单元测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-	quality_detect = append(quality_detect, stageInfo{Title: "集成测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
-
-	server_change = append(server_change, stageInfo{Title: "服务器安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-
-	image_build = append(image_build, stageInfo{Title: "环境安装", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-	image_build = append(image_build, stageInfo{Title: "服务构建", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
-
-	release = append(release, stageInfo{Title: "服务部署", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 0})
-	release = append(release, stageInfo{Title: "服务测试", Img: "https://img.alicdn.com/tfs/TB1QS.4l4z1gK0jSZSgXXavwpXa-1024-1024.png",Index: 1})
-
-
-	switch stageId {
-	case 1:
-		data, _ := json.Marshal(code_review)
-		return data
-	case 2:
-		data, _ := json.Marshal(conflict_detect)
-		return data
-	case 3:
-		data, _ := json.Marshal(code_scan)
-		return data
-	case 4:
-		data, _ := json.Marshal(pre_compile)
-		return data
-	case 5:
-		data, _ := json.Marshal(merge)
-		return data
-	case 6:
-		data, _ := json.Marshal(compile)
-		return data
-	case 7:
-		data, _ := json.Marshal(quality_detect)
-		return data
-	case 8:
-		data,_ := json.Marshal(server_change)
-		return data
-	case 9:
-		data,_ := json.Marshal(image_build)
-		return data
-	case 10:
-		data,_ := json.Marshal(release)
-		return data
-	default:
-		return nil
+	var infoSteps []step.InfoStep
+	stage,_ := db.GetStageById(stageId)
+	steps,_ := db.BranchQueryStepsByIds(stage.Steps)
+	for i:=0; i<len(steps); i++ {
+		infoStep := step.InfoStep{Index: i, Image: steps[i].Img, Title: steps[i].Name, StepId: steps[i].ID}
+		infoSteps = append(infoSteps, infoStep)
 	}
+
+	data, err := json.Marshal(infoSteps)
+	return data, err
 }
 
 func StageExecInfo(c *context.Context) {

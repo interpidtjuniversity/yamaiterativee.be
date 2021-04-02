@@ -27,6 +27,15 @@ func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
 	return actions, nil
 }
 
+func GetIterActionById (actionId int64) (*IterationAction, error) {
+	iterationAction := &IterationAction{}
+	has, err := x.ID(actionId).Get(iterationAction)
+	if !has {
+		return nil, err
+	}
+	return iterationAction, nil
+}
+
 func InsertIterationAction(action *IterationAction) (int64, error) {
 	id, err := x.Insert(action)
 	return id, err
