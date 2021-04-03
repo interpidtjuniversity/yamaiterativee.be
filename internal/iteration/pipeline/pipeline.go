@@ -354,7 +354,7 @@ func IterStageState(c *context.Context) ([]byte, error) {
 
 func IterStepState(c *context.Context) ([]byte, error) {
 	actionId := c.ParamsInt64(":actionId")
-	//stageId := c.ParamsInt64(":stageId")
+	stageId := c.ParamsInt64(":stageId")
 	stepId := c.ParamsInt64(":stepId")
 
 	var action *RuntimePipeline
@@ -372,9 +372,18 @@ func IterStepState(c *context.Context) ([]byte, error) {
 	if action != nil {
 		for j:=0; j<len(action.Buckets); j++ {
 			for k:=0; k<len(action.Buckets[j].Steps); k++ {
-				if action.Buckets[j].Steps[k].StepId == stepId {
+				if action.Buckets[j].StageId == stageId && action.Buckets[j].Steps[k].StepId == stepId {
 					runtimeStepState = action.Buckets[j].Steps[k].State
+					break
 				}
+			}
+		}
+	} else {
+		stageExec,_ := db.QueryStageExec(actionId, stageId)
+		if stageExec!=nil {
+			stepExec,_ := db.GetStepExecByStageExecIdAndStepId(stageExec.Id, stepId)
+			if stepExec!=nil {
+				runtimeStepState = runtimeStepState.FromString(stepExec.State)
 			}
 		}
 	}

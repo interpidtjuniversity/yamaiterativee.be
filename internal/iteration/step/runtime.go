@@ -32,6 +32,21 @@ func (r RuntimeStepState) ToString() string {
 	}
 }
 
+func (r RuntimeStepState) FromString(s string) RuntimeStepState {
+	switch s {
+	case "Init":
+		return Init
+	case "Running":
+		return Running
+	case "Finish":
+		return Finish
+	case "Failure":
+		return Failure
+	default:
+		return Unknown
+	}
+}
+
 /** business mapping from db.StepExec to RuntimeStep and task abstract*/
 type RuntimeStep struct {
 	Id                int64
@@ -67,7 +82,7 @@ type Message struct {
 func (t *RuntimeStep) Run() (interface{}, error) {
 	// write db
 	t.State = Running
-	step := db.StepExec{StepId: t.StepId, StageExecId: t.StageExecId, LogPath: t.LogPath, ExecPath: t.ExecPath}
+	step := db.StepExec{StepId: t.StepId, StageExecId: t.StageExecId, LogPath: t.LogPath, ExecPath: t.ExecPath, State: Running.ToString()}
 	_, _ = db.InsertStepExec(&step)
 	t.Id = step.ID
 	// exec
@@ -85,7 +100,6 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 }
 
 func (t *RuntimeStep) Success(result interface{}) {
-	fmt.Print("success")
 	t.State = Finish
 	t.SuccessChannel <- Message{
 		StageIndex: t.StageIndex,

@@ -1,5 +1,7 @@
 package db
 
+import "xorm.io/builder"
+
 type StepExec struct {
 	ID          int64  	`xorm:"id autoincr pk"`
 	StageExecId int64   `xorm:"stage_exec_id"`
@@ -7,6 +9,7 @@ type StepExec struct {
 	StepId      int64   `xorm:"step_id"`
 	Passed      bool    `xorm:"is_passed"`
 	ExecPath    string  `xorm:"exec_path"`
+	State       string  `xorm:"state"`
 }
 
 func InsertStepExec(exec *StepExec) (int64, error){
@@ -15,11 +18,20 @@ func InsertStepExec(exec *StepExec) (int64, error){
 }
 
 func PassStepExec(id int64) error{
-	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": true})
+	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": true, "state": "Finish"})
 	return err
 }
 
 func FailStepExec(id int64) error{
-	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": false})
+	_, err := x.Table(&StepExec{}).ID(id).Update(map[string]interface{}{"is_passed": false, "state": "Failure"})
 	return err
+}
+
+func GetStepExecByStageExecIdAndStepId(stageExecId, stepId int64) (*StepExec, error) {
+	stepExec := &StepExec{}
+	has, err := x.Where(builder.Eq{"stage_exec_id" : stageExecId}.And(builder.Eq{"step_id": stepId})).Get(stepExec)
+	if !has {
+		return nil, err
+	}
+	return stepExec, nil
 }
