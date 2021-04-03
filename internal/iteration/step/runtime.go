@@ -2,6 +2,7 @@ package step
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"yama.io/yamaIterativeE/internal/db"
@@ -80,11 +81,11 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 	if err != nil {
 		return nil, err
 	}
-	err = commend.Wait()
 	return nil, err
 }
 
 func (t *RuntimeStep) Success(result interface{}) {
+	fmt.Print("success")
 	t.State = Finish
 	t.SuccessChannel <- Message{
 		StageIndex: t.StageIndex,
@@ -100,6 +101,7 @@ func (t *RuntimeStep) Success(result interface{}) {
 }
 
 func (t *RuntimeStep) Failure() {
+	fmt.Print("failure")
 	t.State = Failure
 	t.FailureChannel <- Message{
 		StageIndex: t.StageIndex,

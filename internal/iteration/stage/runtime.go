@@ -38,14 +38,17 @@ func (rss RuntimeStageState)ToString() string {
 	switch rss {
 	case Init:
 		return "Init"
+	case Ready:
+		return "Ready"
 	case Running:
 		return "Running"
 	case Finish:
 		return "Finish"
 	case Failure:
 		return "Failure"
+	default:
+		return "Unknown"
 	}
-	return ""
 }
 
 func (rss RuntimeStageState) CanUpdate() bool  {

@@ -1,6 +1,7 @@
 package pipeline
 
 import (
+	"bytes"
 	"container/list"
 	"fmt"
 	"time"
@@ -35,6 +36,8 @@ func (rps RuntimePipelineState)ToString() string {
 		return "Canceled"
 	case Error:
 		return "Error"
+	default:
+		return "Unknown"
 	}
 	return ""
 }
@@ -144,15 +147,14 @@ func (rp *RuntimePipeline) BuildRuntimeStage() {
 		}
 	}
 	for _, v := range rp.StagesIndex {
-		if m[v] == 0 {
+		if m[v] == 0 && rp.Buckets[v].State == stage.Init{
 			rp.Buckets[v].State = stage.Ready
 		}
 	}
 }
 
-func GetDAGMaxParallel(dag [][]int64) (res int) {
+var InDegree = func(dag [][]int64) (map[int]int, int, int) {
 	m := make(map[int]int)
-	var queue []int
 	height := len(dag)
 	width := len(dag[0])
 
@@ -163,6 +165,13 @@ func GetDAGMaxParallel(dag [][]int64) (res int) {
 			}
 		}
 	}
+	return m, height, width
+}
+
+func GetDAGMaxParallel(dag [][]int64) (res int) {
+	m, height, _ := InDegree(dag)
+
+	var queue []int
 	var update = func(pattern string) {
 		switch pattern {
 		case "init":
@@ -288,6 +297,7 @@ func (e *Executor) Start() {
 			e.Lock.Lock()
 			var status RuntimePipelineState
 			var p *RuntimePipeline
+			var removeList []*list.Element
 			for i := e.actions.Front(); i != nil; i = i.Next() {
 				p = (i.Value).(*RuntimePipeline)
 				status = p.Status
@@ -298,9 +308,13 @@ func (e *Executor) Start() {
 					p.Status = Running
 					Handle(p)
 				} else if status == Finish {
-					e.actions.Remove(i)
+					removeList = append(removeList, i)
 					Handle(p)
 				}
+			}
+			// remove
+			for i := 0; i < len(removeList); i++ {
+				e.actions.Remove(removeList[i])
 			}
 			e.Lock.Unlock()
 			time.Sleep(time.Duration(5)*time.Second)
@@ -368,10 +382,30 @@ func (e *Executor) Start() {
 						pipeline := (i.Value).(*RuntimePipeline)
 
 						if pipeline.ID == message.IterationActionId {
+							//1. update RuntimeStage state
 							stageRuntime := pipeline.Buckets[message.StageIndex]
 							stageRuntime.Lock.Lock()
 							stageRuntime.State = stage.Failure
 							stageRuntime.Lock.Unlock()
+							//2. judge if RuntimePipeline needs failure
+							m,_,_ := InDegree(pipeline.StageDAG)
+							var inDegrees []byte
+							var failures []byte
+							for _,v := range pipeline.StagesIndex {
+								if m[v] == 0 {
+									inDegrees = append(inDegrees, byte(v))
+								}
+							}
+							for i:=0; i<len(pipeline.Buckets); i++ {
+								if pipeline.Buckets[i].State == stage.Failure {
+									failures = append(failures, byte(pipeline.Buckets[i].StageIndex))
+								}
+							}
+							if bytes.Equal(inDegrees, failures) {
+								pipeline.Status = Error
+							}
+							//3. TODO
+
 						}
 					}
 					e.Lock.Unlock()

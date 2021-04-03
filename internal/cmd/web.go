@@ -85,8 +85,8 @@ func runWeb(c *cli.Context) error {
 						m.Get("/:envType", stage.IterActionInfo)
 					})
 					m.Group("/:actionId", func() {
+						m.Get("/state", pipeline.IterActionState)
 						m.Group("/stage", func() {
-							m.Get("", pipeline.IterActionState)
 							m.Get("/:stageId", stage.IterStageInfo)
 							m.Get("/:stageId/state", pipeline.IterStageState)
 							m.Group("/step", func() {

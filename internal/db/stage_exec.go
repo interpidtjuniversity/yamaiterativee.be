@@ -36,6 +36,6 @@ func InsertStageExec(exec *StageExec) (int64, error){
 }
 
 func UpdateStageExecState(id int64, state string) error {
-	_, err := x.Table(&IterationAction{}).ID(id).Update(map[string]interface{}{"state": state})
+	_, err := x.Table(&StageExec{}).ID(id).Update(map[string]interface{}{"state": state})
 	return err
 }

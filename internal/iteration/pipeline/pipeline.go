@@ -83,14 +83,15 @@ func (ep EndpointPosition)String(id int) string{
 }
 
 type pipelineInfo struct {
-	PipelineId int64        `json:"pipelineId"`
-	AvatarSrc  string       `json:"avatarSrc"`
-	ActionInfo string       `json:"actionInfo"`
-	ExtInfo    string       `json:"extInfo"`
-	Nodes      []stage.Node `json:"nodes"`
-	Edges      []edge       `json:"edges"`
-	Groups     []group      `json:"groups"`
-	State      string       `json:"state"`
+	PipelineId  int64        `json:"pipelineId"`
+	AvatarSrc   string       `json:"avatarSrc"`
+	ActionInfo  string       `json:"actionInfo"`
+	ExtInfo     string       `json:"extInfo"`
+	Nodes       []stage.Node `json:"nodes"`
+	Edges       []edge       `json:"edges"`
+	Groups      []group      `json:"groups"`
+	State       string       `json:"state"`
+	IterationId int64        `json:"iterationId"`
 }
 
 func (pi pipelineInfo)Clone() pipelineInfo  {
@@ -99,6 +100,7 @@ func (pi pipelineInfo)Clone() pipelineInfo  {
 	clone.AvatarSrc = pi.AvatarSrc
 	clone.ActionInfo = pi.ActionInfo
 	clone.State = pi.State
+	clone.IterationId = pi.IterationId
 	clone.Nodes = make([]stage.Node, len(pi.Nodes))
 	clone.Edges = make([]edge, len(pi.Edges))
 	clone.Groups = make([]group, len(pi.Groups))
@@ -259,7 +261,7 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		// call stageInfo with actId and stageId
 		var stageIds []int64
 		for _,node := range pipelineInfoTemplate.Nodes {
-			stageIds = append(stageIds, node.Id)
+			stageIds = append(stageIds, node.StageId)
 		}
 		// agg StageExec and Stage
 		// stageExecs,_ := db.BranchQueryStageExec(action.Id, stageIds)
@@ -269,18 +271,19 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			stageMap[s.ID] = s
 		}
 		for i := 0; i<len(pipelineInfoTemplate.Nodes); i++ {
-			pipelineInfoTemplate.Nodes[i].IconType = stageMap[pipelineInfoTemplate.Nodes[i].Id].IconType
-			pipelineInfoTemplate.Nodes[i].ClassName = stageMap[pipelineInfoTemplate.Nodes[i].Id].ClassName
-			pipelineInfoTemplate.Nodes[i].Group = stageMap[pipelineInfoTemplate.Nodes[i].Id].Group
-			pipelineInfoTemplate.Nodes[i].Label = stageMap[pipelineInfoTemplate.Nodes[i].Id].Name
+			pipelineInfoTemplate.Nodes[i].IconType = stageMap[pipelineInfoTemplate.Nodes[i].StageId].IconType
+			pipelineInfoTemplate.Nodes[i].ClassName = stageMap[pipelineInfoTemplate.Nodes[i].StageId].ClassName
+			pipelineInfoTemplate.Nodes[i].Group = stageMap[pipelineInfoTemplate.Nodes[i].StageId].Group
+			pipelineInfoTemplate.Nodes[i].Label = stageMap[pipelineInfoTemplate.Nodes[i].StageId].Name
 			pipelineInfoTemplate.Nodes[i].ActionId = (*action).Id
-			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d", (*action).Id, pipelineInfoTemplate.Nodes[i].Id)
+			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d", (*action).Id, pipelineInfoTemplate.Nodes[i].StageId)
 		}
 		pipelineInfoTemplate.PipelineId=action.Id
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo
 		pipelineInfoTemplate.AvatarSrc=action.AvatarSrc
 		pipelineInfoTemplate.ExtInfo=action.ExtInfo
 		pipelineInfoTemplate.State = action.State
+		pipelineInfoTemplate.IterationId = iterationId
 		// only one group exist so we get index of 0
 		pipelineInfoTemplate.Groups[0].Options.Title = action.ActionGroupInfo
 
@@ -339,7 +342,9 @@ func IterStageState(c *context.Context) ([]byte, error) {
 		// compatible time delay
 		// query from db
 		stageExec,_ := db.QueryStageExec(actionId, stageId)
-		stageState = stageState.FromString(stageExec.State)
+		if stageExec != nil {
+			stageState = stageState.FromString(stageExec.State)
+		}
 	}
 
 	data, err := json.Marshal(stageState.ToString())

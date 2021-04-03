@@ -36,7 +36,7 @@ func (ep *Endpoint)FormatId(id int){
 	}
 }
 
-var p *ping = &ping{counter: 0, m: map[int64]string{0: "loading", 1:"warning", 2:"success", 3:"error"}, colorM: map[int64]string{0: "1F49E0", 1:"#FFA003", 2:"#1DC11D", 3:"#FF3333"}}
+var p *ping = &ping{counter: 0, m: map[int64]string{0: "loading", 1:"warning", 2:"success", 3:"error"}, colorM: map[int64]string{0: "#1F49E0", 1:"#FFA003", 2:"#1DC11D", 3:"#FF3333"}}
 type ping struct {
 	mu sync.Mutex
 	counter int64
