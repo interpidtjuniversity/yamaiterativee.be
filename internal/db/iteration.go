@@ -1,9 +1,7 @@
 package db
 
 import (
-	"encoding/json"
 	"fmt"
-	"yama.io/yamaIterativeE/internal/context"
 )
 
 type Iteration struct {
@@ -11,39 +9,22 @@ type Iteration struct {
 	IterCreatorId   string   `xorm:"iter_creator_uid"`
 	IterType        string   `xorm:"iter_type"`
 	IterAdmin       []string `xorm:"iter_admin"`
-	IterState       []string `xorm:"iter_state"`
+	IterState       int      `xorm:"iter_state"`        // 0,1,2,3,4   -> dev,itg,pre,gary.prod
 	IterBranch      string   `xorm:"iter_branch"`
 	IterDevActGroup int64    `xorm:"iter_dev_act_group"`
 	IterPreActGroup int64    `xorm:"iter_pre_act_group"`
 	IterItgActGroup int64    `xorm:"iter_itg_act_group"`
-	Application     string   `xorm:"application"`
+	OwnerName       string   `xorm:"owner_name""`
+	RepoName        string   `xorm:"repo_name"`
 	IterDevClc      float64  `xorm:"iter_dev_clc"`
 	IterItgClc      float64  `xorm:"iter_itg_clc"`
 	IterPreClc      float64  `xorm:"iter_pre_clc"`
 	IterDevQs       float64  `xorm:"iter_dev_qs"`
 	IterItgQs       float64  `xorm:"iter_itg_qs" `
 	IterPreQs       float64  `xorm:"iter_pre_qs"`
-	DevPr           []int    `xorm:"dev_pr"`
-	ItgPr           []int    `xorm:"itg_pr"`
-	PrePr           []int    `xorm:"pre_pr"`
-}
-
-// return iteration status, which is 'process'
-func IterInfo(c *context.Context) []byte {
-	iterationId := c.ParamsInt64(":iterationId")
-	if iterationId == 1 {
-		info := [][]string{
-			{"开发阶段", "", "finish"},
-			{"集成阶段", "", "finish"},
-			{"预发阶段", "", "process"},
-			{"灰度发布", "", "wait"},
-			{"发布阶段", "", "wait"},
-		}
-		data, _ := json.Marshal(info)
-		return data
-	}
-	return nil
-
+	DevPr           int      `xorm:"dev_pr"`
+	ItgPr           int      `xorm:"itg_pr"`
+	PrePr           int      `xorm:"pre_pr"`
 }
 
 func GetIterationById(id int64) (*Iteration, error){

@@ -11,9 +11,10 @@ func Test_CreateIteration(t *testing.T) {
 	iter := Iteration{
 		IterCreatorId: "interpidtjuniversity",
 		IterAdmin: []string{"interpidtjuniversity"},
-		IterState: []string{"dev"},
+		IterState: 3,
 		IterBranch: "E9876543210_20210226",
-		Application: "test",
+		OwnerName: "interpidtjuniversity",
+		RepoName: "test",
 		IterType: "basic MR",
 	}
 	_, err := x.Insert(iter)

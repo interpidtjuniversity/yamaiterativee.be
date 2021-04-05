@@ -8,6 +8,7 @@ import (
 	"gopkg.in/macaron.v1"
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
+	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/route"
@@ -71,18 +72,17 @@ func runWeb(c *cli.Context) error {
 		m.Get("/", route.Home)
 
 		m.Group("/iteration", func() {
-			m.Get("/ping", stage.Ping)
 			m.Group("/:iterationId", func() {
-				m.Get("/info", stage.IterInfo)
+				m.Get("/info", env.IterInfo)
 				m.Group("/envType", func() {
 					m.Group("/:envType", func() {
 						m.Get("", pipeline.IterPipelineInfo)
-						m.Get("/info", stage.IterEnvInfo)
+						m.Get("/info", env.IterEnvInfo)
 					})
 				})
 				m.Group("/action", func() {
 					m.Group("/envType", func() {
-						m.Get("/:envType", stage.IterActionInfo)
+						m.Get("/:envType", env.IterActionInfo)
 					})
 					m.Group("/:actionId", func() {
 						m.Get("/state", pipeline.IterActionState)
@@ -90,7 +90,6 @@ func runWeb(c *cli.Context) error {
 							m.Get("/:stageId", stage.IterStageInfo)
 							m.Get("/:stageId/state", pipeline.IterStageState)
 							m.Group("/:stageId/step", func() {
-								m.Get("/:stepId", stage.StageExecInfo)
 								m.Get("/:stepId/state", pipeline.IterStepState)
 							})
 						})

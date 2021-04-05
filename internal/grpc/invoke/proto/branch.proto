@@ -54,10 +54,23 @@ message RegisterMRResponse{
   string showDiffUri = 1;
   int64 MRId = 2;
 }
+
+
+message CommitQueryRequest{
+  string ownerName = 1;                      // repoName like /:userName/:repoName
+  string repoName = 2;
+  string branchName = 3;
+}
+message CommitQueryResponse{
+  string commitId = 1;
+  string url = 2;
+}
+
 service YaMaHubBranchService{
   rpc CreateBranch(CreateBranchRequest) returns (CreateBranchResponse) {}
   rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchResponse) {}
   rpc Merge2Branch(Merge2BranchRequest) returns (Merge2BranchResponse) {}
   rpc Query2BranchConflict(ConflictDetectRequest) returns (ConflictDetectResponse) {}
   rpc RegisterMergeRequest(RegisterMRRequest) returns (RegisterMRResponse){}
+  rpc QueryRepoBranchCommit(CommitQueryRequest) returns (CommitQueryResponse) {}
 }
