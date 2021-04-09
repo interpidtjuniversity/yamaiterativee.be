@@ -1,0 +1,20 @@
+syntax = "proto3";
+package proto;
+option go_package="../../invoke";
+
+message QueryOwnerRequest{
+}
+message QueryOwnerResponse{
+  repeated string ownerNames = 1;
+}
+message QueryApplicationRequest{
+  string ownerName = 1;
+}
+message QueryApplicationResponse{
+  repeated string appNames = 1;
+}
+
+service YaMaHubApplicationService{
+  rpc QueryApplicationOwners(QueryOwnerRequest) returns (QueryOwnerResponse) {}
+  rpc QueryApplications(QueryApplicationRequest) returns (QueryApplicationResponse) {}
+}

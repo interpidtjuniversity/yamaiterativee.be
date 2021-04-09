@@ -30,3 +30,15 @@ func InvokeRegisterMergeRequestService() *invoke.RegisterMRResponse {
 	}
 	return r
 }
+
+func InvokeQueryRepoBranchCommitService(ownerName, repoName, branchName string) (string, string){
+
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	response, _ := client.QueryRepoBranchCommit(context.Background(), &invoke.CommitQueryRequest{OwnerName: ownerName, RepoName: repoName, BranchName: branchName})
+
+	return response.CommitId[:8], response.Url
+}

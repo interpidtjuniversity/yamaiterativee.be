@@ -1,12 +1,10 @@
 package env
 
 import (
-	sdkcontext "context"
 	"encoding/json"
-	"time"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
-	"yama.io/yamaIterativeE/internal/grpc/invoke"
+	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
 )
 
 //1. const info for each step in each iteration
@@ -51,13 +49,7 @@ func IterEnvInfo (c *context.Context) []byte {
 	iteration, _ := db.GetIterationById(iterationId)
 	actGroup,_ := db.GetIterationActGroupByIterationIdAndEnv(iterationId, envType)
 
-
-	conn := invoke.GetConnection()
-	defer invoke.Return(conn)
-	client := invoke.NewYaMaHubBranchServiceClient(conn)
-	_, cancel := sdkcontext.WithTimeout(sdkcontext.Background(), time.Second)
-	defer cancel()
-	response, _ := client.QueryRepoBranchCommit(sdkcontext.Background(), &invoke.CommitQueryRequest{OwnerName: iteration.OwnerName, RepoName: iteration.RepoName, BranchName: actGroup.TargetBranch})
+	latestCommit, latestCommitLink := invokerImpl.InvokeQueryRepoBranchCommitService(iteration.OwnerName, iteration.RepoName, actGroup.TargetBranch)
 
 	var pr int
 	var qs float64
@@ -79,7 +71,7 @@ func IterEnvInfo (c *context.Context) []byte {
 		clc = iteration.IterPreClc
 		break
 	}
-	data, _ := json.Marshal(iterEnvInfo{TargetBranch: actGroup.TargetBranch, LatestCommit: response.CommitId[:8], LatestCommitLink: response.Url, PRCount: pr, ChangeLineCoverage: string(rune(int(clc * 100))), QualityScore: int(qs), LatestMode: "MR"})
+	data, _ := json.Marshal(iterEnvInfo{TargetBranch: actGroup.TargetBranch, LatestCommit: latestCommit, LatestCommitLink: latestCommitLink, PRCount: pr, ChangeLineCoverage: string(rune(int(clc * 100))), QualityScore: int(qs), LatestMode: "MR"})
 	return data
 }
 

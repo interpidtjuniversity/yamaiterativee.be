@@ -8,6 +8,7 @@ import (
 	"gopkg.in/macaron.v1"
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
+	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
@@ -70,6 +71,15 @@ func runWeb(c *cli.Context) error {
 
 	m.Group("", func() {
 		m.Get("/", route.Home)
+
+		m.Group("/home", func() {
+			m.Group("/workbench", func() {
+				m.Group("/newiteration", func() {
+					m.Get("/allusers", workbench.GetAllOwners)
+					m.Get("/ownerrepos/:ownerName", workbench.GetOwnerApplications)
+				})
+			})
+		})
 
 		m.Group("/iteration", func() {
 			m.Group("/:iterationId", func() {
