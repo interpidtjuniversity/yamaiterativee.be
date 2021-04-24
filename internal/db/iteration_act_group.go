@@ -17,3 +17,11 @@ func GetIterationActGroupByIterationIdAndEnv(iterationId int64, envType string) 
 	}
 	return iag, nil
 }
+
+func InsertIterationActGroup(group IterationActGroup) (int64, error){
+	_,err := x.Insert(&group)
+	if err != nil {
+		return 0, err
+	}
+	return group.ID, nil
+}

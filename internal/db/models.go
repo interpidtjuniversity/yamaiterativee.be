@@ -44,6 +44,7 @@ func init() {
 	for _, name := range gonicNames {
 		core.LintGonicMapper[name] = true
 	}
+	Proxy = TransactionProxy{}
 }
 
 func getEngine() (*xorm.Engine, error) {

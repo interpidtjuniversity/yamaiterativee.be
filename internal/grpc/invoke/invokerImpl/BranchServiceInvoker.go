@@ -42,3 +42,19 @@ func InvokeQueryRepoBranchCommitService(ownerName, repoName, branchName string) 
 
 	return response.CommitId[:8], response.Url
 }
+
+func InvokeCreateBranchService(data map[string]interface{}) error {
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	_, err := client.CreateBranch(context.Background(), &invoke.CreateBranchRequest{
+		UserName: data["ownerName"].(string),
+		Repository: data["repoName"].(string),
+		IsLock: data["isLock"].(bool),
+		Branch: data["iterBranch"].(string),
+	})
+
+	return err
+}

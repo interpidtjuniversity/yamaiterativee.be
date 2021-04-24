@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"github.com/go-macaron/binding"
 	"github.com/go-macaron/cache"
 	"github.com/go-macaron/captcha"
 	"github.com/go-macaron/gzip"
@@ -8,6 +9,7 @@ import (
 	"gopkg.in/macaron.v1"
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
+	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
@@ -77,6 +79,7 @@ func runWeb(c *cli.Context) error {
 				m.Group("/newiteration", func() {
 					m.Get("/allusers", workbench.GetAllOwners)
 					m.Get("/ownerrepos/:ownerName", workbench.GetOwnerApplications)
+					m.Post("/new",binding.BindIgnErr(form.Iteration{}), workbench.NewIteration)
 				})
 			})
 		})

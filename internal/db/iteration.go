@@ -36,6 +36,19 @@ func GetIterationById(id int64) (*Iteration, error){
 	return iteration, nil
 }
 
+func InsertIteration(iteration Iteration) (int64, error){
+	_,err := x.Insert(&iteration)
+	if err != nil {
+		return 0, err
+	}
+	return iteration.ID, nil
+}
+
+func UpdateIteration(iteration Iteration) error {
+	_,err := x.ID(iteration.ID).Update(iteration)
+	return err
+}
+
 
 type ErrIterationNotExist struct {
 	Args map[string]interface{}
