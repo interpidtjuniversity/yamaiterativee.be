@@ -2,15 +2,10 @@ package main
 
 import (
 	"github.com/urfave/cli"
-	_ "github.com/urfave/cli"
 	"log"
-	_ "log"
 	"os"
-	_ "os"
 	"yama.io/yamaIterativeE/internal/cmd"
-	_ "yama.io/yamaIterativeE/internal/cmd"
 	"yama.io/yamaIterativeE/internal/conf"
-	_ "yama.io/yamaIterativeE/internal/conf"
 )
 
 func main() {

@@ -10,3 +10,17 @@ type User struct {
 	Avatar    string `xorm:"avatar"`
 	ExtInfo   string `xorm:"ext_info"`
 }
+
+func GetAllUser() ([]string, error) {
+	var users []User
+	var names []string
+	err := x.Cols("name").Where("id > ?", 0).Find(&users)
+	if err != nil {
+		return nil, err
+	}
+	for _, user := range users{
+		names = append(names, user.Name)
+	}
+	return names, nil
+
+}

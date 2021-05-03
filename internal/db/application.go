@@ -1,14 +1,20 @@
 package db
 
 type Application struct {
-	ID         int64      `xorm:"id autoincr pk"`
-	AppName    string     `xorm:"app_name"`
-	NetWork    string     `xorm:"net_work"`
-	Owner      string     `xorm:"owner"`
-	RepoUrl    string     `xorm:"repo_url"`
-	TestConfig string     `xorm:"test_config"`
-	ProdConfig string     `xorm:"prod_config"`
-	Users      []int64    `xorm:"users"`
+	ID              int64    `xorm:"id autoincr pk"`
+	AppName         string   `xorm:"app_name"`
+	NetWork         string   `xorm:"network"`
+	Owner           string   `xorm:"owner"`
+	RepoUrl         string   `xorm:"repo_url"`
+	DevInstances    []string `xorm:"dev_instances"`
+	StableInstances []string `xorm:"stable_instances"`
+	TestInstances   []string `xorm:"test_instances"`
+	PreInstances    []string `xorm:"pre_instances"`
+	ProdInstances   []string `xorm:"prod_instances"`
+	TestConfig      string   `xorm:"test_config"`
+	ProdConfig      string   `xorm:"prod_config"`
+	DevConfig       string   `xorm:"dev_config"`
+	Users           []string `xorm:"users"`
 }
 
 func NewApplication() {

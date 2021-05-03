@@ -13,8 +13,31 @@ message QueryApplicationRequest{
 message QueryApplicationResponse{
   repeated string appNames = 1;
 }
+message CreateApplicationRequest{
+  int64 userId = 1;
+  string repoName = 2;
+  string description = 3;
+  bool isPrivate = 4;
+  bool autoInit = 5;
+  string userName = 6;
+}
+message CreateApplicationResponse{
+  int64 repoId = 1;
+  string owner = 2;
+  string repoName = 3;
+  string fullRepoName = 4;
+  string description = 5;
+  bool private = 6;
+  string htmlUrl = 7;
+  string sshUrl = 8;
+  string cloneUrl = 9;
+  string webSite = 10;
+  string defaultBranch = 11;
+  bool success = 12;
+}
 
 service YaMaHubApplicationService{
   rpc QueryApplicationOwners(QueryOwnerRequest) returns (QueryOwnerResponse) {}
   rpc QueryApplications(QueryApplicationRequest) returns (QueryApplicationResponse) {}
+  rpc CreateApplication(CreateApplicationRequest) returns (CreateApplicationResponse) {}
 }

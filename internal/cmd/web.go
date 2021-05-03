@@ -10,10 +10,13 @@ import (
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/form"
+	"yama.io/yamaIterativeE/internal/home/application"
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
+	"yama.io/yamaIterativeE/internal/registry/consul"
+	"yama.io/yamaIterativeE/internal/resource"
 	"yama.io/yamaIterativeE/internal/route"
 )
 
@@ -68,6 +71,8 @@ func newMacaron() *macaron.Macaron {
 func runWeb(c *cli.Context) error {
 	// init database
 	route.GlobalInit("")
+	// init global resource
+	resource.InitResource()
 
 	m := newMacaron()
 
@@ -80,6 +85,14 @@ func runWeb(c *cli.Context) error {
 					m.Get("/allusers", workbench.GetAllOwners)
 					m.Get("/ownerrepos/:ownerName", workbench.GetOwnerApplications)
 					m.Post("/new",binding.BindIgnErr(form.Iteration{}), workbench.NewIteration)
+				})
+			})
+
+			m.Group("/application", func() {
+				m.Group("/newapplication", func() {
+					m.Post("/new", binding.BindIgnErr(form.Application{}), application.NewApplication)
+					m.Get("/allusers", application.GetAllUsers)
+					m.Post("/seticon", application.SetNewApplicationIcon)
 				})
 			})
 		})
@@ -115,7 +128,28 @@ func runWeb(c *cli.Context) error {
 			})
 		})
 
+		m.Group("/v1", func() {
+			m.Group("/status", func() {
+				m.Get("/leader", consul.Leader)
+			})
 
+			m.Group("/agent", func() {
+				m.Group("/service", func() {
+					m.Put("/register", consul.Register)
+					m.Put("/deregister/:service", consul.DeRegister)
+				})
+				m.Group("/check", func() {
+
+				})
+				m.Get("/self", consul.Ping)
+			})
+
+			m.Group("/catalog", func() {
+				m.Get("/services", consul.GetServices)
+			})
+
+			m.Get("/health/service/:service", consul.GetServiceInstances)
+		})
 
 	},
 		context.Contexter(),

@@ -3,13 +3,12 @@ package workbench
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
-	"strings"
 	"time"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
+	"yama.io/yamaIterativeE/internal/util"
 )
 
 func GetAllOwners(c *context.Context) []byte {
@@ -76,8 +75,6 @@ func NewIteration(c *context.Context, f form.Iteration) []byte{
 
 
 func generateIterBranch() string {
-	uid, _ := uuid.NewUUID()
 	y,m,d := time.Now().Date()
-	id := fmt.Sprintf("%s_%s", strings.ReplaceAll(uid.String(), "-",""), fmt.Sprintf("%d_%d_%d", y,m,d))
-	return id
+	return util.GenerateRandomString(10,fmt.Sprintf("%d_%d_%d", y,m,d))
 }

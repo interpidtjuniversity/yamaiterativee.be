@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"xorm.io/builder"
 	"yama.io/yamaIterativeE/internal/util"
@@ -67,4 +68,12 @@ func Test_InSet(t *testing.T) {
 	}).ToSlice(&names)
 	fmt.Print(names)
 
+}
+
+func Test_GetAllUser(t *testing.T) {
+	NewEngine()
+
+	users, err := GetAllUser()
+	assert.Nil(t, err)
+	fmt.Print(users)
 }

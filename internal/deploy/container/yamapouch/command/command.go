@@ -14,7 +14,7 @@ import (
 func Run0(command string, args ...string) (error) {
 	pouchDir,_ := os.Getwd()
 	cmd := exec.Command(command, args...)
-	cmd.Dir = fmt.Sprintf("%s/command", pouchDir)
+	cmd.Dir = fmt.Sprintf("%s/internal/deploy/container/yamapouch/command", pouchDir)
 	err := cmd.Run()
 
 	return err
@@ -25,7 +25,7 @@ func Run(command string, args ...string) (*bytes.Buffer, *bytes.Buffer, error) {
 	bufErr := new(bytes.Buffer)
 	pouchDir,_ := os.Getwd()
 	cmd := exec.Command(command, args...)
-	cmd.Dir = fmt.Sprintf("%s/command", pouchDir)
+	cmd.Dir = fmt.Sprintf("%s/internal/deploy/container/yamapouch/command", pouchDir)
 	cmd.Stdout = bufOut
 	cmd.Stderr = bufErr
 	err := cmd.Run()
@@ -48,7 +48,13 @@ func CreateNetWork(name, ipRange, driver string) error{
 // run
 // ./pouch run -d --name spring-prod3000 -net basebridge -p 8100:8080 JavaImage top -b
 func CreateContainer(name, netWork, portMapping, imageName, initCommand string) (string, error){
-	bufOut, bufErr, err := Run("./pouch", "run", "-d", "--name", name, "--net", netWork, "-p", portMapping, imageName, initCommand)
+	var bufOut, bufErr *bytes.Buffer
+	var err error
+	if portMapping != "" {
+		bufOut, bufErr, err = Run("./pouch", "run", "-d", "--name", name, "--net", netWork, "-p", portMapping, imageName, initCommand)
+	} else {
+		bufOut, bufErr, err = Run("./pouch", "run", "-d", "--name", name, "--net", netWork, imageName, initCommand)
+	}
 	if err != nil {
 		return "", err
 	}
@@ -192,7 +198,13 @@ func ExecuteCommandInContainer(name, command string, args ...string) error{
 	var all []string
 	all = append(all, []string{"execute", "--name", name, command}...)
 	all = append(all, args...)
-	_,_,err := Run("./pouch", all...)
+	_,bufErr,err := Run("./pouch", all...)
+	if err!= nil {
+		return err
+	}
+	if bufErr.Len() > 0 {
+		return fmt.Errorf("error while execute pouch execute, error: %s", bufErr.String())
+	}
 	return err
 }
 

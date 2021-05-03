@@ -4,6 +4,7 @@ go 1.14
 
 require (
 	github.com/aliyun/alibaba-cloud-sdk-go v1.61.997
+	github.com/aliyun/aliyun-oss-go-sdk v2.1.8+incompatible
 	github.com/denisenkom/go-mssqldb v0.0.0-20200206145737-bbfc9a55622e // indirect
 	github.com/fatih/color v1.9.0 // indirect
 	github.com/go-macaron/binding v1.1.1
@@ -14,6 +15,7 @@ require (
 	github.com/gogs/go-libravatar v0.0.0-20191106065024-33a75213d0a0
 	github.com/golang/protobuf v1.4.3
 	github.com/google/uuid v1.2.0
+	github.com/hashicorp/consul/api v1.8.1 // indirect
 	github.com/jinzhu/gorm v1.9.12
 	github.com/json-iterator/go v1.1.10 // indirect
 	github.com/klauspost/compress v1.11.12 // indirect
