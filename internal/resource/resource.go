@@ -13,7 +13,7 @@ const (
 var(
 	GLOBAL_MYSQL_IP string
 	GLOBAL_CONSUL_IP string
-	GLOAB_ZIPKIN_IP string
+	GLOBAL_ZIPKIN_IP string
 	GLOBAL_MYSQL = "GLOBAL_MYSQL"
 	GLOBAL_CONSUL = "GLOBAL_CONSUL"
 	GLOBAL_ZIPKIN = "GLOBAL_ZIPKIN"
@@ -21,25 +21,46 @@ var(
 
 func InitResource() {
 	network.InitNetwork()
-	if mysql,_ := db.GetResourceByName(GLOBAL_MYSQL); mysql==nil {
+	mysql,_ := db.GetResourceByName(GLOBAL_MYSQL)
+	if mysql==nil {
 		mysqlIP, err := server.NewMysqlServer(GLOBAL_MYSQL, network.NAME, ENV)
 		if err != nil {
 			panic("error while create global mysql")
 		}
 		GLOBAL_MYSQL_IP = mysqlIP
+		db.InsertResource(&db.Resource{
+			Name: GLOBAL_MYSQL,
+			Value: mysqlIP,
+		})
+	} else{
+		GLOBAL_MYSQL_IP = mysql.Value
 	}
-	if consul,_ := db.GetResourceByName(GLOBAL_CONSUL); consul==nil {
+	consul,_ := db.GetResourceByName(GLOBAL_CONSUL)
+	if consul==nil {
 		consulIP, err := server.NewConsulServer(GLOBAL_CONSUL, network.NAME, ENV)
 		if err != nil {
 			panic("error while create global consul")
 		}
 		GLOBAL_CONSUL_IP = consulIP
+		db.InsertResource(&db.Resource{
+			Name: GLOBAL_CONSUL,
+			Value: consulIP,
+		})
+	} else {
+		GLOBAL_CONSUL_IP = consul.Value
 	}
-	if zipkin,_ := db.GetResourceByName(GLOBAL_ZIPKIN); zipkin==nil {
+	zipkin,_ := db.GetResourceByName(GLOBAL_ZIPKIN)
+	if zipkin==nil {
 		zipkinIP, err := server.NewZipkinServer(GLOBAL_ZIPKIN, network.NAME, ENV)
 		if err != nil {
 			panic("error while create global zipkin")
 		}
-		GLOAB_ZIPKIN_IP = zipkinIP
+		GLOBAL_ZIPKIN_IP = zipkinIP
+		db.InsertResource(&db.Resource{
+			Name: GLOBAL_ZIPKIN,
+			Value: zipkinIP,
+		})
+	} else {
+		GLOBAL_ZIPKIN_IP = zipkin.Value
 	}
 }

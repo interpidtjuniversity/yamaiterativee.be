@@ -28,7 +28,7 @@ and it takes care of all the other things for you`,
 	Action: runWeb,
 	Flags: []cli.Flag{
 		stringFlag("port, p", "6000", "Temporary port number to prevent conflict"),
-		stringFlag("config, c", "", "Custom configuration file path"),
+		stringFlag("config, c", "", "Changeable configuration file path"),
 	},
 }
 
@@ -73,6 +73,8 @@ func runWeb(c *cli.Context) error {
 	route.GlobalInit("")
 	// init global resource
 	resource.InitResource()
+	// init application config(usage in create new application)
+	application.InitConfig()
 
 	m := newMacaron()
 
@@ -93,6 +95,10 @@ func runWeb(c *cli.Context) error {
 					m.Post("/new", binding.BindIgnErr(form.Application{}), application.NewApplication)
 					m.Get("/allusers", application.GetAllUsers)
 					m.Post("/seticon", application.SetNewApplicationIcon)
+
+					m.Group("/optionconfig", func() {
+						m.Get("/javaspring", application.GetJavaSpringConfig)
+					})
 				})
 			})
 		})

@@ -19,3 +19,18 @@ func GetResourceByName(name string) (*Resource, error) {
 	}
 	return resource, nil
 }
+
+func InsertResource(resource *Resource) error {
+	r := new(Resource)
+	exist, err := x.Table("resource").Where(builder.Eq{"name": resource.Name}).Get(r)
+	if exist {
+		r.Value = resource.Value
+		_, err :=x.Table("resource").Where(builder.Eq{"name": resource.Name}).Update(r)
+		return err
+	}
+	if err != nil {
+		return err
+	}
+	_, err = x.Table("resource").Insert(resource)
+	return err
+}

@@ -1,12 +1,14 @@
 package consul
 
 import (
+	"fmt"
 	"gopkg.in/macaron.v1"
 	"net/http"
+	"yama.io/yamaIterativeE/internal/resource"
 )
 
 var consul = &Consul{}
-var req = &RequestContext{Registry: "192.168.1.3:8500"}
+var req = &RequestContext{Registry: fmt.Sprintf("%s:8500", resource.GLOBAL_CONSUL_IP)}
 
 type Consul struct {
 	client        *http.Client
