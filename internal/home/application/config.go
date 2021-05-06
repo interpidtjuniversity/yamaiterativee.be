@@ -14,23 +14,29 @@ var (
 )
 
 type JavaSpringDynamicConfig struct {
-	CONSUL_HOST string
-	CONSUL_PORT string
-	ZIPKIN_URL  string
-	HOST_NAME   string
-	HOST_TAGs   string
-	INSTANCE_ID string
-	APP_NAME    string
+	CONSUL_HOST  string
+	CONSUL_PORT  string
+	ZIPKIN_URL   string
+	DATABASE_URL string
+	DATABASE_UN  string
+	DATABASE_PD  string
+	HOST_NAME    string
+	HOST_TAGs    string
+	INSTANCE_ID  string
+	APP_NAME     string
 }
 
 var JAVA_SPRING_DYNAMIC_CONFIG = JavaSpringDynamicConfig{
-	CONSUL_HOST: "spring.cloud.consul.host",
-	CONSUL_PORT: "spring.cloud.consul.port",
-	ZIPKIN_URL:  "spring.zipkin.base-url",
-	HOST_NAME:   "spring.cloud.consul.discovery.hostname",
-	HOST_TAGs:   "spring.cloud.consul.discovery.tags",
-	INSTANCE_ID: "spring.cloud.consul.discovery.instance-id",
-	APP_NAME:    "spring.application.name",
+	CONSUL_HOST:  "spring.cloud.consul.host",
+	CONSUL_PORT:  "spring.cloud.consul.port",
+	ZIPKIN_URL:   "spring.zipkin.base-url",
+	HOST_NAME:    "spring.cloud.consul.discovery.hostname",
+	HOST_TAGs:    "spring.cloud.consul.discovery.tags",
+	INSTANCE_ID:  "spring.cloud.consul.discovery.instance-id",
+	APP_NAME:     "spring.application.name",
+	DATABASE_URL: "spring.datasource.url",
+	DATABASE_UN:  "spring.datasource.username",
+	DATABASE_PD:  "spring.datasource.password",
 }
 
 func InitConfig() {
@@ -40,12 +46,12 @@ func InitConfig() {
 func initJavaSpringConfig() {
 	JavaSpringConfig = db.GetJavaSpringConfig()
 	// consul use yamaiterativee proxy
-	JavaSpringConfig.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_HOST, getLocalIPv4Address())
-	JavaSpringConfig.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_PORT, 4000)
+	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_HOST, getLocalIPv4Address())
+	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_PORT, 4000)
 	// zipkin use global zipkin
-	JavaSpringConfig.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_ZIPKIN_IP)
+	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_ZIPKIN_IP)
 	// mysql use global mysql
-	JavaSpringConfig.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_MYSQL_IP)
+	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, "jdbc:%s://%s:3306/%s")
 }
 
 func GetJavaSpringConfig() ([]byte, error) {

@@ -12,18 +12,22 @@ const DomainRecordType = "A"
 const Schema = "https"
 
 func init() {
-	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", "xxx", "xxx")
+	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", "LTAI5tJ8otAjZGng83ksbpXX", "OfcgDQjx8RyNQSKZ9vD3jt8HzTkc9X")
 	AliDNSClient = client
 }
 
-func ApplyApplicationDomain(envType, application string) error{
+func ApplyApplicationDomain(envType, domainName string) error{
 
 	request := alidns.CreateAddDomainRecordRequest()
 	request.Scheme = Schema
 	request.DomainName = MainSite
 	request.Value = MainSiteHost
 	request.Type = DomainRecordType
-	request.RR = fmt.Sprintf("%s.%s", envType, application)
+	if envType!= "" {
+		request.RR = fmt.Sprintf("%s.%s", envType, domainName)
+	}else {
+		request.RR = fmt.Sprintf(domainName)
+	}
 
 	_, err := AliDNSClient.AddDomainRecord(request)
 	return err

@@ -5,6 +5,7 @@ import (
 	"math/rand"
 	"time"
 	"xorm.io/builder"
+	"yama.io/yamaIterativeE/internal/deploy/container/yamapouch/command"
 )
 
 /**
@@ -43,8 +44,10 @@ func CreateApplicationNetWork(networkName, ownerName, appName string) (*NetWork,
 		IPRange: network,
 		Type: TYPE_MAP[networkType],
 	}
-	_, _ = x.Table("network").Insert(newNetwork)
-
+	if _, err := x.Table("network").Insert(newNetwork); err!=nil {
+		return nil, err
+	}
+	command.CreateNetWork(networkName, network, "bridge")
 	return newNetwork, nil
 }
 

@@ -12,6 +12,7 @@ import (
 	"xorm.io/xorm"
 	"yama.io/yamaIterativeE/internal/conf"
 
+	_ "github.com/jinzhu/gorm/dialects/mysql"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 

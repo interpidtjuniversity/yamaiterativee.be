@@ -94,7 +94,6 @@ func runWeb(c *cli.Context) error {
 				m.Group("/newapplication", func() {
 					m.Post("/new", binding.BindIgnErr(form.Application{}), application.NewApplication)
 					m.Get("/allusers", application.GetAllUsers)
-					m.Post("/seticon", application.SetNewApplicationIcon)
 
 					m.Group("/optionconfig", func() {
 						m.Get("/javaspring", application.GetJavaSpringConfig)

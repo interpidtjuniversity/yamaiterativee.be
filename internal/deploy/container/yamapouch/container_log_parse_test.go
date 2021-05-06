@@ -19,7 +19,7 @@ func Test_ListContainer(t *testing.T) {
 }
 
 func Test_CreateNetWork(t *testing.T) {
-	err := command.CreateNetWork("bridasdg","10.0.9.0/24","bridge")
+	err := command.CreateNetWork("chiling.cy_test","172.16.2.0/24","bridge")
 	assert.Nil(t, err)
 }
 

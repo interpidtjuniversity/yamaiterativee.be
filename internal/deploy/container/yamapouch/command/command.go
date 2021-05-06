@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"yama.io/yamaIterativeE/internal/deploy/container/yamapouch/model"
 )
@@ -250,4 +251,21 @@ func EnhanceContainer(name, storePath string, executable string) error{
 func RemoveNetWork(name string) error {
 	_,_,err := Run("./pouch", "network", "remove", name)
 	return err
+}
+
+
+// get current project's root path
+// return path not contain the exec file
+func GetProjectRoot() string {
+	var (
+		path string
+		err  error
+	)
+	defer func() {
+		if err != nil {
+			panic(fmt.Sprintf("GetProjectRoot error :%+v", err))
+		}
+	}()
+	path, err = filepath.Abs(filepath.Dir(os.Args[0]))
+	return path
 }

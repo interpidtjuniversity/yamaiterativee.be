@@ -10,21 +10,31 @@ type Config struct {
 	ConfigItems         []ConfigItem `xorm:"config_items"`
 }
 func (c *Config) SetConfigItem(key string, value interface{}) {
-	for _, item := range c.ConfigItems {
-		if item.Key == key {
-			item.Value = value
+	for i:=0; i<len(c.ConfigItems); i++ {
+		if c.ConfigItems[i].Key == key {
+			c.ConfigItems[i].Value = value
 			return
 		}
 	}
 }
 
-type ConfigItem struct {
-	Key         string
-	Value       interface{}
-	Changeable  bool
-	Displayable bool
+func (c *Config) GetConfigItem(key string) interface{} {
+	for i:=0; i<len(c.ConfigItems); i++ {
+		if c.ConfigItems[i].Key == key {
+			return c.ConfigItems[i].Value
+		}
+	}
+	return nil
 }
 
+type ConfigItem struct {
+	Key         string      `json:"key"`
+	Value       interface{} `json:"value"`
+	Changeable  bool        `json:"changeable"`
+	Displayable bool        `json:"displayable"`
+}
+
+// same as config table!!!
 var JAVA_SPRING_CONFIG = Config{
 	ApplicationType: "JAVA_SPRING",
 	ConfigItems: []ConfigItem{
@@ -42,10 +52,12 @@ var JAVA_SPRING_CONFIG = Config{
 		{"spring.sleuth.sampler.probability", 1, false, true},
 		{"spring.sleuth.grpc.enabled", true, false, true},
 		{"spring.cloud.consul.discovery.register", true, false, true},
-		{"spring.cloud.consul.discovery.port", true, false, true},
-		{"grpc.server.port", 10000, false, true},
+		{"spring.cloud.consul.discovery.port", 10000, false, true},
+		{"spring.datasource.username", "root", false, true},
+		{"spring.datasource.password", 123456, false, true},
 
 		// dynamic config and change with yamaiterativee env
+		{"spring.datasource.url", "-", false, true},
 		{"spring.cloud.consul.host", "-", false, true},
 		{"spring.cloud.consul.port", "-", false, true},
 		{"spring.zipkin.base-url", "-", false, true},

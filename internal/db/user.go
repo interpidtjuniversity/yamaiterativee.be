@@ -14,7 +14,7 @@ type User struct {
 func GetAllUser() ([]string, error) {
 	var users []User
 	var names []string
-	err := x.Cols("name").Where("id > ?", 0).Find(&users)
+	err := x.Cols("name").Where("id >= ?", 0).Find(&users)
 	if err != nil {
 		return nil, err
 	}

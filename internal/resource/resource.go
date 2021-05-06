@@ -1,6 +1,8 @@
 package resource
 
 import (
+	"fmt"
+	"xorm.io/xorm"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/home/server"
 )
@@ -17,6 +19,7 @@ var(
 	GLOBAL_MYSQL = "GLOBAL_MYSQL"
 	GLOBAL_CONSUL = "GLOBAL_CONSUL"
 	GLOBAL_ZIPKIN = "GLOBAL_ZIPKIN"
+    GLOBAL_MYSQL_ENGINE *xorm.Engine
 )
 
 func InitResource() {
@@ -63,4 +66,22 @@ func InitResource() {
 	} else {
 		GLOBAL_ZIPKIN_IP = zipkin.Value
 	}
+
+	initGlobalMysql(GLOBAL_MYSQL_IP)
+}
+
+func initGlobalMysql(ip string) {
+	connStr := fmt.Sprintf("%s:%s@tcp(%s)/%s%scharset=utf8mb4&parseTime=true",
+		"root", "123456", ip, "test", "?")
+	var engineParams = map[string]string{"rowFormat": "DYNAMIC"}
+	GLOBAL_MYSQL_ENGINE, _ = xorm.NewEngineWithParams("mysql", connStr, engineParams)
+}
+
+func CreateDataBaseInGlobalDataBase(dataBaseType, dataBaseName string) error{
+	switch dataBaseType {
+	case "Mysql":
+		_, err := GLOBAL_MYSQL_ENGINE.Exec(fmt.Sprintf("CREATE DATABASE %s", dataBaseName))
+		return err
+	}
+	return nil
 }
