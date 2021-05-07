@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -51,4 +52,13 @@ func Test_QueryStageExec(t *testing.T) {
 	NewEngine()
 	stageExec, _ := QueryStageExec(18,7)
 	fmt.Print(*stageExec)
+}
+
+func TestBatchQueryStateExecByActIdAndStageId(t *testing.T) {
+	NewEngine()
+	stageExec, err := BatchQueryStateExecByActIdAndStageId([]int64{1,2,3}, []int64{1,2,3})
+	assert.Nil(t, err)
+	fmt.Print(stageExec[0].Id)
+	fmt.Print(stageExec[1].Id)
+	fmt.Print(stageExec[2].Id)
 }

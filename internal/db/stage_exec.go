@@ -1,6 +1,9 @@
 package db
 
-import "xorm.io/builder"
+import (
+	"fmt"
+	"xorm.io/builder"
+)
 
 type StageExec struct {
 	Id             int64  `xorm:"id autoincr pk"`
@@ -14,7 +17,7 @@ type StageExec struct {
 
 func QueryStageExec(iterationActionId, stageId int64) (*StageExec, error){
 	exec := &StageExec{}
-	has, err := x.Where(builder.Eq{"act_id": iterationActionId}.And(builder.Eq{"stage_id": stageId})).Get(exec)
+	has, err := x.Table("stage_exec").Cols("id", "state").Where(builder.Eq{"act_id": iterationActionId}.And(builder.Eq{"stage_id": stageId})).Get(exec)
 	if !has{
 		return nil, err
 	}
@@ -38,4 +41,26 @@ func InsertStageExec(exec *StageExec) (int64, error){
 func UpdateStageExecState(id int64, state string) error {
 	_, err := x.Table(&StageExec{}).ID(id).Update(map[string]interface{}{"state": state})
 	return err
+}
+
+// (actionsIds[0],stageIds[0]), (actionsIds[1],stageIds[1])
+func BatchQueryStateExecByActIdAndStageId(actionIds, stageIds []int64) ([]*StageExec, error) {
+	var execs []*StageExec
+	var filterResult []*StageExec
+	condMap := make(map[string]bool)
+	for i:=0; i < len(actionIds); i++ {
+		condMap[fmt.Sprintf("%d-%d", actionIds[i], stageIds[i])] = true
+	}
+
+	err := x.Cols("id","act_id","stage_id", "state").Where(builder.In("act_id", actionIds)).And(builder.In("stage_id", stageIds)).Find(&execs)
+	if err != nil{
+		return nil, err
+	}
+	for _,v := range execs {
+		key := fmt.Sprintf("%d-%d", v.ActId, v.StageId)
+		if condMap[key] {
+			filterResult = append(filterResult, v)
+		}
+	}
+	return filterResult, nil
 }

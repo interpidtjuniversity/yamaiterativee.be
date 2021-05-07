@@ -3,10 +3,10 @@ package workbench
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"time"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
-	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
 	"yama.io/yamaIterativeE/internal/util"
 )
@@ -31,11 +31,18 @@ func GetOwnerApplications(c *context.Context) []byte {
 	return data
 }
 
-func NewIteration(c *context.Context, f form.Iteration) []byte{
+func NewIteration(c *context.Context) []byte{
+	creator := c.Query("creator")
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+	admins := strings.Split(c.Query("admins"),",")
+	iterType := c.Query("iterType")
+	baseCommit,_ := invokerImpl.InvokeQueryMasterLatestCommitIdService(appOwner, appName)
+
 
 	var newIterationFunc = func(session *db.ProxySession) (map[string]interface{}, error){
-		iteration := db.Iteration{IterCreatorId: f.Creator, IterType: f.Type, IterAdmin: f.Admin, OwnerName: f.Owner, RepoName: f.Repo,
-			IterBranch: generateIterBranch(), IterState: 0}
+		iteration := db.Iteration{IterCreatorId: creator, IterType: iterType, IterAdmin: admins, OwnerName: appOwner, RepoName: appName,
+			IterBranch: generateIterBranch(), IterState: 0, BaseCommit: baseCommit}
 		// insert iteration
 		_, err := session.Session.Insert(&iteration)
 		if err != nil {
@@ -49,7 +56,7 @@ func NewIteration(c *context.Context, f form.Iteration) []byte{
 		}
 		// update iteration
 		iteration.IterDevActGroup = iag.ID
-		_, err = session.Session.Update(iteration)
+		_, err = session.Session.ID(iteration.ID).Update(&iteration)
 		if err != nil {
 			return nil, err
 		}

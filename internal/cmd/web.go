@@ -86,7 +86,7 @@ func runWeb(c *cli.Context) error {
 				m.Group("/newiteration", func() {
 					m.Get("/allusers", workbench.GetAllOwners)
 					m.Get("/ownerrepos/:ownerName", workbench.GetOwnerApplications)
-					m.Post("/new",binding.BindIgnErr(form.Iteration{}), workbench.NewIteration)
+					m.Post("/new", workbench.NewIteration)
 				})
 			})
 

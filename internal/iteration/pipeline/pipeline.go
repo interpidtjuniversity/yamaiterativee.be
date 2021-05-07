@@ -254,6 +254,22 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		// 5.save result
 		pipelineInfoMap[p.ID] = pli
 	}
+	// agg actId and stageId
+	var actionIds []int64
+	var stageIds []int64
+	filterStateMap := make(map[string]string)
+	stream.ForEach(func(action *db.IterationAction) {
+		pipelineInfoTemplate := pipelineInfoMap[action.PipeLineId]
+		for i := 0; i<len(pipelineInfoTemplate.Nodes); i++ {
+			actionIds = append(actionIds, action.Id)
+			stageIds = append(stageIds, pipelineInfoTemplate.Nodes[i].StageId)
+		}
+	})
+	filterResults, _ := db.BatchQueryStateExecByActIdAndStageId(actionIds, stageIds)
+	for _, filterResult := range filterResults {
+		filterStateMap[fmt.Sprintf("%d-%d", filterResult.ActId, filterResult.StageId)] = filterResult.State
+	}
+
 	var pipelineInfos []pipelineInfo
 	// create completely pipelineInfo with pipeline template and envActions
 	stream.ForEach(func(action *db.IterationAction) {
@@ -277,6 +293,7 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			pipelineInfoTemplate.Nodes[i].Label = stageMap[pipelineInfoTemplate.Nodes[i].StageId].Name
 			pipelineInfoTemplate.Nodes[i].ActionId = (*action).Id
 			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d", (*action).Id, pipelineInfoTemplate.Nodes[i].StageId)
+			pipelineInfoTemplate.Nodes[i].State = filterStateMap[fmt.Sprintf("%d-%d", pipelineInfoTemplate.Nodes[i].ActionId, pipelineInfoTemplate.Nodes[i].StageId)]
 		}
 		pipelineInfoTemplate.PipelineId=action.Id
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo

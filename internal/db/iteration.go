@@ -14,7 +14,7 @@ type Iteration struct {
 	IterDevActGroup int64    `xorm:"iter_dev_act_group"`
 	IterPreActGroup int64    `xorm:"iter_pre_act_group"`
 	IterItgActGroup int64    `xorm:"iter_itg_act_group"`
-	OwnerName       string   `xorm:"owner_name""`
+	OwnerName       string   `xorm:"owner_name"`
 	RepoName        string   `xorm:"repo_name"`
 	IterDevClc      float64  `xorm:"iter_dev_clc"`
 	IterItgClc      float64  `xorm:"iter_itg_clc"`
@@ -25,6 +25,7 @@ type Iteration struct {
 	DevPr           int      `xorm:"dev_pr"`
 	ItgPr           int      `xorm:"itg_pr"`
 	PrePr           int      `xorm:"pre_pr"`
+	BaseCommit      string   `xorm:"base_commit"`
 }
 
 func GetIterationById(id int64) (*Iteration, error){

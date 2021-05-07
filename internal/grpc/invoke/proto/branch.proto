@@ -8,6 +8,7 @@ message CreateBranchRequest{
   string repository = 3;
   string branch = 4;
   bool isLock = 5;
+  bool needMr = 6;
 }
 message CreateBranchResponse{
   bool success = 1;
@@ -66,6 +67,15 @@ message CommitQueryResponse{
   string url = 2;
 }
 
+
+message MasterLatestCommitQueryRequest{
+  string ownerName = 1;
+  string repoName = 2;
+}
+message MasterLatestCommitQueryResponse{
+  string commitId = 1;
+}
+
 service YaMaHubBranchService{
   rpc CreateBranch(CreateBranchRequest) returns (CreateBranchResponse) {}
   rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchResponse) {}
@@ -73,4 +83,5 @@ service YaMaHubBranchService{
   rpc Query2BranchConflict(ConflictDetectRequest) returns (ConflictDetectResponse) {}
   rpc RegisterMergeRequest(RegisterMRRequest) returns (RegisterMRResponse){}
   rpc QueryRepoBranchCommit(CommitQueryRequest) returns (CommitQueryResponse) {}
+  rpc QueryMasterLatestCommit(MasterLatestCommitQueryRequest) returns (MasterLatestCommitQueryResponse) {}
 }

@@ -21,6 +21,7 @@ type Node struct {
 	Left            int        `json:"left"`
 	Group           string     `json:"group"`
 	Endpoints       []Endpoint `json:"endpoints"`
+	State           string     `json:"state"`
 }
 //
 type Endpoint struct {

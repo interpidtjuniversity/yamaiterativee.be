@@ -52,9 +52,24 @@ func InvokeCreateBranchService(data map[string]interface{}) error {
 	_, err := client.CreateBranch(context.Background(), &invoke.CreateBranchRequest{
 		UserName: data["ownerName"].(string),
 		Repository: data["repoName"].(string),
-		IsLock: data["isLock"].(bool),
+		IsLock: data["protected"].(bool),
 		Branch: data["iterBranch"].(string),
+		NeedMr: data["needMR"].(bool),
 	})
 
 	return err
+}
+
+func InvokeQueryMasterLatestCommitIdService(ownerName, repoName string) (string, error){
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	response, err := client.QueryMasterLatestCommit(context.Background(), &invoke.MasterLatestCommitQueryRequest{
+		OwnerName: ownerName,
+		RepoName: repoName,
+	})
+
+	return response.CommitId, err
 }
