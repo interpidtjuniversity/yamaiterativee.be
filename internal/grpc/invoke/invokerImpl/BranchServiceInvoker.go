@@ -39,8 +39,11 @@ func InvokeQueryRepoBranchCommitService(ownerName, repoName, branchName string) 
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 	response, _ := client.QueryRepoBranchCommit(context.Background(), &invoke.CommitQueryRequest{OwnerName: ownerName, RepoName: repoName, BranchName: branchName})
+	if response != nil {
+		return response.CommitId[:8], response.Url
+	}
 
-	return response.CommitId[:8], response.Url
+	return "",""
 }
 
 func InvokeCreateBranchService(data map[string]interface{}) error {

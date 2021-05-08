@@ -82,16 +82,18 @@ func IterInfo(c *context.Context) []byte {
 	iterationId := c.ParamsInt64(":iterationId")
 	iteration, _ := db.GetIterationById(iterationId)
 	info := [][]string{
-		{"开发阶段", "", "finish"},
-		{"集成阶段", "", "finish"},
-		{"预发阶段", "", "process"},
+		{"开发阶段", "", "wait"},
+		{"集成阶段", "", "wait"},
+		{"预发阶段", "", "wait"},
 		{"灰度发布", "", "wait"},
 		{"发布阶段", "", "wait"},
 	}
 	for i := 0; i<iteration.IterState;i++ {
 		info[i][2] = "finish"
 	}
-	info[iteration.IterState][2] = "process"
+	if iteration.IterState >= 0 {
+		info[iteration.IterState][2] = "process"
+	}
 	for i := iteration.IterState + 1; i < 5; i++ {
 		info[i][2] = "wait"
 	}

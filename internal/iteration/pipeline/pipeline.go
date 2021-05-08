@@ -3,6 +3,8 @@ package pipeline
 import (
 	"encoding/json"
 	"fmt"
+	"strconv"
+	"strings"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
@@ -271,6 +273,7 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	}
 
 	var pipelineInfos []pipelineInfo
+	stageIdsMap := make(map[string][]*db.Stage)
 	// create completely pipelineInfo with pipeline template and envActions
 	stream.ForEach(func(action *db.IterationAction) {
 		pipelineInfoTemplate := pipelineInfoMap[action.PipeLineId].Clone()
@@ -281,7 +284,14 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		}
 		// agg StageExec and Stage
 		// stageExecs,_ := db.BranchQueryStageExec(action.Id, stageIds)
-		stages,_ := db.BranchQueryStage(stageIds)
+		var stages []*db.Stage
+		key := concatInt64Slice(stageIds)
+		if stageIdsMap[key] == nil {
+			stages, _ = db.BranchQueryStage(stageIds)
+			stageIdsMap[key] = stages
+		} else{
+			stages = stageIdsMap[key]
+		}
 		stageMap := make(map[int64]*db.Stage)
 		for _,s :=range stages {
 			stageMap[s.ID] = s
@@ -587,6 +597,14 @@ var findEndpointPosition = func(sX, sY, eX, eY int) (s, e EndpointPosition) {
 	}
 
 	return s,e
+}
+
+func concatInt64Slice(array []int64) string{
+	var arrayString []string
+	for _, v := range array {
+		arrayString = append(arrayString, strconv.FormatInt(v, 10))
+	}
+	return strings.Join(arrayString, "-")
 }
 
 type DataError struct {

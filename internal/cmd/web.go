@@ -16,7 +16,6 @@ import (
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/registry/consul"
-	"yama.io/yamaIterativeE/internal/resource"
 	"yama.io/yamaIterativeE/internal/route"
 )
 
@@ -72,9 +71,9 @@ func runWeb(c *cli.Context) error {
 	// init database
 	route.GlobalInit("")
 	// init global resource
-	resource.InitResource()
+	//resource.InitResource()
 	// init application config(usage in create new application)
-	application.InitConfig()
+	//application.InitConfig()
 
 	m := newMacaron()
 
@@ -99,6 +98,10 @@ func runWeb(c *cli.Context) error {
 						m.Get("/javaspring", application.GetJavaSpringConfig)
 					})
 				})
+			})
+
+			m.Group("/server", func() {
+
 			})
 		})
 
