@@ -11,6 +11,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/home/application"
+	"yama.io/yamaIterativeE/internal/home/server"
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
@@ -101,7 +102,9 @@ func runWeb(c *cli.Context) error {
 			})
 
 			m.Group("/server", func() {
-
+				m.Group("/newserver", func() {
+					m.Post("/new", server.NewServer)
+				})
 			})
 		})
 

@@ -2,6 +2,8 @@ package server
 
 import (
 	"fmt"
+	"yama.io/yamaIterativeE/internal/context"
+	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/deploy/container/yamapouch/command"
 	"yama.io/yamaIterativeE/internal/util"
 )
@@ -12,6 +14,27 @@ const (
 	// userName-appName-id-env
 	SERVER_NAME = "%s-%s-%s-%s"
 )
+
+
+func NewServer(c *context.Context) []byte {
+	appType := c.Query("appType")
+	iterBranch := c.Query("iterBranch")
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+	iterId := c.QueryInt64("iterId")
+	owner := c.Query("owner")
+	serverType := db.ServerType(c.QueryInt("serverType"))
+
+	newServer := &db.Server{AppOwner: appOwner, AppName: appName, IterationId: iterId, Owner: owner, AppType: appType,
+		Branch: iterBranch, Type: serverType,
+	}
+	// 1. query application network
+	// 2. insert server instance
+	db.InsertServer(newServer)
+	// 3. invoke New...Server by serverType
+
+	return nil
+}
 
 func NewJavaApplicationServer(userName, appName, network, env string) (string, error){
 	containerName := fmt.Sprintf(SERVER_NAME, userName, appName, util.GenerateRandomString(10,""), env)

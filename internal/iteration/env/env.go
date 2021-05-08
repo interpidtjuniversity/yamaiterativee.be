@@ -76,12 +76,18 @@ func IterEnvInfo (c *context.Context) []byte {
 }
 
 
-
+type IterationInfo struct {
+	StateArray  [][]string `json:"stateArray"`
+	Owner       string     `json:"owner"`
+	Application string     `json:"application"`
+	IterBranch  string     `json:"iterBranch"`
+}
 //3. status of an iteration
 func IterInfo(c *context.Context) []byte {
 	iterationId := c.ParamsInt64(":iterationId")
+	info := IterationInfo{}
 	iteration, _ := db.GetIterationById(iterationId)
-	info := [][]string{
+	stateArray := [][]string{
 		{"开发阶段", "", "wait"},
 		{"集成阶段", "", "wait"},
 		{"预发阶段", "", "wait"},
@@ -89,14 +95,19 @@ func IterInfo(c *context.Context) []byte {
 		{"发布阶段", "", "wait"},
 	}
 	for i := 0; i<iteration.IterState;i++ {
-		info[i][2] = "finish"
+		stateArray[i][2] = "finish"
 	}
 	if iteration.IterState >= 0 {
-		info[iteration.IterState][2] = "process"
+		stateArray[iteration.IterState][2] = "process"
 	}
 	for i := iteration.IterState + 1; i < 5; i++ {
-		info[i][2] = "wait"
+		stateArray[i][2] = "wait"
 	}
+	info.StateArray = stateArray
+	info.Owner = iteration.OwnerName
+	info.Application = iteration.RepoName
+	info.IterBranch = iteration.IterBranch
+
 	data, _ := json.Marshal(info)
 	return data
 

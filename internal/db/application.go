@@ -4,6 +4,11 @@ import (
 	"xorm.io/builder"
 )
 
+type AppType int
+const (
+	JAVA_SPRING AppType = iota
+)
+
 type Application struct {
 	ID                        int64    `xorm:"id autoincr pk"`
 	AppName                   string   `xorm:"app_name"`
