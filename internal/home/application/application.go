@@ -20,6 +20,11 @@ func GetAllUsers(c *context.Context) []byte{
 	return data
 }
 
+func ImportApplication(c *context.Context) []byte {
+	return nil
+}
+
+
 func NewApplication(c *context.Context, form form.Application) []byte {
 	userName := c.Query("appOwner")
 	repoName := c.Query("applicationName")

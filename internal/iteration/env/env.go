@@ -81,6 +81,8 @@ type IterationInfo struct {
 	Owner       string     `json:"owner"`
 	Application string     `json:"application"`
 	IterBranch  string     `json:"iterBranch"`
+	IterTitle   string     `json:"iterTitle"`
+	IterState   int        `json:"iterState"`
 }
 //3. status of an iteration
 func IterInfo(c *context.Context) []byte {
@@ -107,6 +109,8 @@ func IterInfo(c *context.Context) []byte {
 	info.Owner = iteration.OwnerName
 	info.Application = iteration.RepoName
 	info.IterBranch = iteration.IterBranch
+	info.IterTitle = iteration.Title
+	info.IterState = int(iteration.IterState)
 
 	data, _ := json.Marshal(info)
 	return data

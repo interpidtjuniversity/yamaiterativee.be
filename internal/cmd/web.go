@@ -75,7 +75,9 @@ func runWeb(c *cli.Context) error {
 	// init global resource
 	//resource.InitResource()
 	// init application config(usage in create new application)
-	//application.InitConfig()
+	application.InitConfig()
+	// reload application network
+	application.ResetApplicationNetwork()
 
 	m := newMacaron()
 
@@ -94,10 +96,11 @@ func runWeb(c *cli.Context) error {
 			m.Group("/application", func() {
 				m.Group("/newapplication", func() {
 					m.Post("/new", binding.BindIgnErr(form.Application{}), application.NewApplication)
+					m.Post("/import", application.ImportApplication)
 					m.Get("/allusers", application.GetAllUsers)
 
 					m.Group("/optionconfig", func() {
-						m.Get("/javaspring", application.GetJavaSpringConfig)
+						m.Get("/:key", application.GetApplicationConfig)
 					})
 				})
 			})
@@ -111,6 +114,9 @@ func runWeb(c *cli.Context) error {
 			m.Group("/server", func() {
 				m.Group("/newserver", func() {
 					m.Post("/new", server.NewServer)
+				})
+				m.Group("/newdeploy", func() {
+					m.Post("/new", server.DeployAppInServer)
 				})
 			})
 		})

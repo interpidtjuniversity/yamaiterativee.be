@@ -2,15 +2,22 @@ package application
 
 import (
 	"encoding/json"
+	"fmt"
 	"net"
+	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/resource"
 )
 
 var (
-	JavaSpringConfig db.Config
-	PythonConfig db.Config
-	GolangConfig db.Config
+	JavaSpringConfig         db.Config
+	SpringMysqlConfig 		 db.Config
+	SpringConsulConfig 		 db.Config
+	SpringZipkinConfig 		 db.Config
+	SpringActuatorConfig 	 db.Config
+	SpringGRPCConfig  		 db.Config
+	PythonConfig 			 db.Config
+	GolangConfig 			 db.Config
 )
 
 type JavaSpringDynamicConfig struct {
@@ -41,6 +48,11 @@ var JAVA_SPRING_DYNAMIC_CONFIG = JavaSpringDynamicConfig{
 
 func InitConfig() {
 	initJavaSpringConfig()
+	initSpringMysqlConfig()
+	initSpringConsulConfig()
+	initSpringGRPCConfig()
+	initSpringActuatorConfig()
+	initSpringZipkinConfig()
 }
 
 func initJavaSpringConfig() {
@@ -53,16 +65,68 @@ func initJavaSpringConfig() {
 	// mysql use global mysql
 	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, "jdbc:%s://%s:3306/%s")
 }
+func initSpringMysqlConfig() {
+	SpringMysqlConfig = db.GetSpringMysqlConfig()
+	// mysql use global mysql
+	(&SpringMysqlConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, "jdbc:%s://%s:3306/%s")
+}
+func initSpringConsulConfig() {
+	SpringConsulConfig = db.GetSpringConsulConfig()
+	// consul use yamaiterativee proxy
+	(&SpringConsulConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_HOST, getLocalIPv4Address())
+	(&SpringConsulConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_PORT, 4000)
+}
+func initSpringZipkinConfig() {
+	SpringZipkinConfig = db.GetSpringZipkinConfig()
+	// zipkin use global zipkin
+	(&SpringZipkinConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_ZIPKIN_IP)
+}
+func initSpringGRPCConfig() {
+	SpringGRPCConfig = db.GetSpringGRPCConfig()
+}
+func initSpringActuatorConfig() {
+	SpringActuatorConfig = db.GetSpringActuatorConfig()
+}
 
-func GetJavaSpringConfig() ([]byte, error) {
+func GetApplicationConfig(c *context.Context) ([]byte, error) {
+	key := c.Params(":key")
+	var config *db.Config
+	switch key {
+	case "JAVA_SPRING":
+		config = &JavaSpringConfig
+		break
+	case "SPRING_CONSUL":
+		config = &SpringConsulConfig
+		break
+	case "SPRING_Actuator":
+		config = &SpringActuatorConfig
+		break
+	case "SPRING_MYSQL":
+		config = &SpringMysqlConfig
+		break
+	case "SPRING_ZIPKIN":
+		config = &SpringZipkinConfig
+		break
+	case "SPRING_GRPC":
+		config = &SpringGRPCConfig
+		break
+	}
+	if config == nil {
+		return nil, fmt.Errorf("unsupport config key: %s", key)
+	}
+
 	var configItems []db.ConfigItem
-	for _, v := range JavaSpringConfig.ConfigItems {
+	for _, v := range config.ConfigItems {
 		if v.Displayable {
 			configItems = append(configItems, v)
 		}
 	}
 	data, err := json.Marshal(configItems)
 	return data, err
+}
+
+func ResetApplicationNetwork() {
+
 }
 
 func getLocalIPv4Address() (ipv4Address string) {
