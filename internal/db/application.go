@@ -9,6 +9,15 @@ const (
 	JAVA_SPRING AppType = iota
 )
 
+func (at AppType) ToString() string{
+	switch at {
+	case JAVA_SPRING:
+		return "JavaSpring"
+	default:
+		return "UNKNOWN"
+	}
+}
+
 type Application struct {
 	ID                        int64    `xorm:"id autoincr pk"`
 	AppName                   string   `xorm:"app_name"`
@@ -64,4 +73,13 @@ func GetApplicationByParticipant(user string) ([]*Application, error) {
 	applications = applications[:0]
 	err = x.Table("application").Where(builder.In("id", filterApplicationIds)).Find(&applications)
 	return applications, err
+}
+
+func GetApplicationNetworkByOwnerAndRepo(owner, app string) (string, string){
+	application := new(Application)
+	exist, err := x.Table("application").Cols("network_name","network_ip").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Get(application)
+	if err!=nil || !exist {
+		return "", ""
+	}
+	return application.NetWorkName, application.NetWorkIP
 }

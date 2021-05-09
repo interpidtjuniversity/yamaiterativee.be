@@ -11,6 +11,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/home/application"
+	"yama.io/yamaIterativeE/internal/home/iterations"
 	"yama.io/yamaIterativeE/internal/home/server"
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
@@ -98,6 +99,12 @@ func runWeb(c *cli.Context) error {
 					m.Group("/optionconfig", func() {
 						m.Get("/javaspring", application.GetJavaSpringConfig)
 					})
+				})
+			})
+
+			m.Group("/iterations", func() {
+				m.Group("/user/:username", func() {
+					m.Get("/all", iterations.GetUserAllIterations)
 				})
 			})
 

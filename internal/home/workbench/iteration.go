@@ -37,12 +37,13 @@ func NewIteration(c *context.Context) []byte{
 	appName := c.Query("appName")
 	admins := strings.Split(c.Query("admins"),",")
 	iterType := c.Query("iterType")
+	content := c.Query("content")
 	baseCommit,_ := invokerImpl.InvokeQueryMasterLatestCommitIdService(appOwner, appName)
 
 
 	var newIterationFunc = func(session *db.ProxySession) (map[string]interface{}, error){
-		iteration := db.Iteration{IterCreatorId: creator, IterType: iterType, IterAdmin: admins, OwnerName: appOwner, RepoName: appName,
-			IterBranch: generateIterBranch(), IterState: 0, BaseCommit: baseCommit}
+		iteration := db.Iteration{IterCreator: creator, IterType: iterType, IterAdmin: admins, OwnerName: appOwner, RepoName: appName,
+			IterBranch: generateIterBranch(), IterState: -1, BaseCommit: baseCommit, Content: content, Title: util.GenerateRandomStringWithPrefix(10,"E")}
 		// insert iteration
 		_, err := session.Session.Insert(&iteration)
 		if err != nil {
@@ -83,5 +84,5 @@ func NewIteration(c *context.Context) []byte{
 
 func generateIterBranch() string {
 	y,m,d := time.Now().Date()
-	return util.GenerateRandomString(10,fmt.Sprintf("%d_%d_%d", y,m,d))
+	return util.GenerateRandomStringWithSuffix(10,fmt.Sprintf("%d_%d_%d", y,m,d))
 }

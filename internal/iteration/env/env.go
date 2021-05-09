@@ -94,7 +94,7 @@ func IterInfo(c *context.Context) []byte {
 		{"灰度发布", "", "wait"},
 		{"发布阶段", "", "wait"},
 	}
-	for i := 0; i<iteration.IterState;i++ {
+	for i := 0; i<int(iteration.IterState);i++ {
 		stateArray[i][2] = "finish"
 	}
 	if iteration.IterState >= 0 {

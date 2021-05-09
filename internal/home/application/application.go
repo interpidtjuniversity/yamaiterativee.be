@@ -60,7 +60,7 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 	}
 	newApplication.RepoUrl = appCreateRes.CloneUrl
 	// 2. set up network,
-	network,err := db.CreateApplicationNetWork(util.GenerateRandomString(15,""),userName, repoName)
+	network,err := db.CreateApplicationNetWork(util.GenerateRandomStringWithSuffix(15,""),userName, repoName)
 	if err != nil {
 		return []byte(fmt.Errorf("error while create application network:%s, %s, %s",userName, repoName, err).Error())
 	}
