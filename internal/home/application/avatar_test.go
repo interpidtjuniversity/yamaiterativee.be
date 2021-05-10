@@ -9,7 +9,7 @@ import (
 )
 
 func TestPutImage(t *testing.T) {
-	client, err := oss.New("https://oss-cn-hangzhou.aliyuncs.com", "LTAI5tJ8otAjZGng83ksbpXX","OfcgDQjx8RyNQSKZ9vD3jt8HzTkc9X")
+	client, err := oss.New("https://oss-cn-hangzhou.aliyuncs.com", "xxx","xxx")
 	assert.Nil(t, err)
 	bucket, err := client.Bucket("3levelimage")
 	assert.Nil(t, err)
