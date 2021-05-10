@@ -3,6 +3,7 @@ package application
 import (
 	"fmt"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+	"yama.io/yamaIterativeE/internal/resource"
 )
 
 var AliDNSClient *alidns.Client = nil
@@ -11,10 +12,8 @@ const MainSiteHost = "47.114.153.37"
 const DomainRecordType = "A"
 const Schema = "https"
 
-func init() {
-	// "|LTAI5|tJ8|otA|jZGng|83ksbpXX|
-	// "|OfcgD|Qjx8|RyNQSKZ9v|D3jt8H|zTkc9X|"
-	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", "xxx", "xxx")
+func InitAliYunDNS() {
+	client, _ := alidns.NewClientWithAccessKey("cn-qingdao", resource.GLOBAL_ALIYUN_ACCESSKEY, resource.GLOBAL_ALIYUN_ACCESSKEY_SECRET)
 	AliDNSClient = client
 }
 

@@ -4,19 +4,9 @@ import (
 	"xorm.io/builder"
 )
 
-type AppType int
 const (
-	JAVA_SPRING AppType = iota
+	JAVA_SPRING string = "JAVA_SPRING"
 )
-
-func (at AppType) ToString() string{
-	switch at {
-	case JAVA_SPRING:
-		return "JavaSpring"
-	default:
-		return "UNKNOWN"
-	}
-}
 
 type Application struct {
 	ID                        int64    `xorm:"id autoincr pk"`
@@ -82,4 +72,18 @@ func GetApplicationNetworkByOwnerAndRepo(owner, app string) (string, string){
 		return "", ""
 	}
 	return application.NetWorkName, application.NetWorkIP
+}
+
+func ApplicationIsExist(owner, app string) bool {
+	exist, _ := x.Table("application").Cols("id").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Get(new(Application))
+	return exist
+}
+
+func GetApplicationTypeByOwnerAndRepo(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("app_image").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.ApplicationImage
 }

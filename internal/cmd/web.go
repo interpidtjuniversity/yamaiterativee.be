@@ -18,6 +18,7 @@ import (
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/registry/consul"
+	"yama.io/yamaIterativeE/internal/resource"
 	"yama.io/yamaIterativeE/internal/route"
 )
 
@@ -73,7 +74,10 @@ func runWeb(c *cli.Context) error {
 	// init database
 	route.GlobalInit("")
 	// init global resource
-	//resource.InitResource()
+	resource.InitResource()
+	resource.InitAliYunResource()
+	application.InitAliYunDNS()
+	application.InitAliYunOSS()
 	// init application config(usage in create new application)
 	application.InitConfig()
 	// reload application network
@@ -112,6 +116,9 @@ func runWeb(c *cli.Context) error {
 			})
 
 			m.Group("/server", func() {
+				m.Group("/user/:username", func() {
+					m.Get("/all", server.GetUserAllServers)
+				})
 				m.Group("/newserver", func() {
 					m.Post("/new", server.NewServer)
 				})

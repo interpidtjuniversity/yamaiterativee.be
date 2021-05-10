@@ -1,17 +1,12 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="yamaIterativeE" uuid="30223dae-814e-48bc-ba28-de5db5872b10">
+    <data-source source="LOCAL" name="yamaIterativeE.db" uuid="8a3d3cf0-3892-41a4-b825-a769c49ef589">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>
-      <jdbc-url>jdbc:sqlite:$PROJECT_DIR$/yamaIterativeE.db</jdbc-url>
+      <jdbc-url>jdbc:sqlite:$USER_HOME$/yamaIterativeE/yamaIterativeE-database/yamaIterativeE.db</jdbc-url>
       <working-dir>$ProjectFileDir$</working-dir>
-      <libraries>
-        <library>
-          <url>file://$APPLICATION_CONFIG_DIR$/jdbc-drivers/Xerial SQLiteJDBC/3.34.0/sqlite-jdbc-3.34.0.jar</url>
-        </library>
-      </libraries>
     </data-source>
   </component>
 </project>

@@ -13,14 +13,25 @@ const (
 )
 
 var(
-	GLOBAL_MYSQL_IP string
-	GLOBAL_CONSUL_IP string
-	GLOBAL_ZIPKIN_IP string
-	GLOBAL_MYSQL = "GLOBAL_MYSQL"
-	GLOBAL_CONSUL = "GLOBAL_CONSUL"
-	GLOBAL_ZIPKIN = "GLOBAL_ZIPKIN"
-    GLOBAL_MYSQL_ENGINE *xorm.Engine
+	GLOBAL_MYSQL_IP                    string
+	GLOBAL_CONSUL_IP                   string
+	GLOBAL_ZIPKIN_IP                   string
+	GLOBAL_ALIYUN_ACCESSKEY            string
+	GLOBAL_ALIYUN_ACCESSKEY_SECRET     string
+	GLOBAL_MYSQL                       = "GLOBAL_MYSQL"
+	GLOBAL_CONSUL                      = "GLOBAL_CONSUL"
+	GLOBAL_ZIPKIN                      = "GLOBAL_ZIPKIN"
+	GLOBAL_ALIYUN_ACCESSKEY_KEY        = "GLOBAL_ALIYUN_ACCESSKEY_KEY"
+	GLOBAL_ALIYUN_ACCESSKEY_SECRET_KEY = "GLOBAL_ALIYUN_ACCESSKEY_SECRET_KEY"
+    GLOBAL_MYSQL_ENGINE                *xorm.Engine
 )
+
+func InitAliYunResource() {
+	accessKey, _ := db.GetResourceByName(GLOBAL_ALIYUN_ACCESSKEY_KEY)
+	accessSecret, _ := db.GetResourceByName(GLOBAL_ALIYUN_ACCESSKEY_SECRET_KEY)
+	GLOBAL_ALIYUN_ACCESSKEY = accessKey.Value
+	GLOBAL_ALIYUN_ACCESSKEY_SECRET = accessSecret.Value
+}
 
 func InitResource() {
 	network.InitNetwork()
@@ -79,7 +90,7 @@ func initGlobalMysql(ip string) {
 
 func CreateDataBaseInGlobalDataBase(dataBaseType, dataBaseName string) error{
 	switch dataBaseType {
-	case "Mysql":
+	case "SPRING_MYSQL":
 		_, err := GLOBAL_MYSQL_ENGINE.Exec(fmt.Sprintf("CREATE DATABASE %s", dataBaseName))
 		return err
 	}

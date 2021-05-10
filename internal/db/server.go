@@ -57,12 +57,29 @@ const (
 	STOPPED
 )
 
+func (ss ServerState) ToString() string{
+	switch ss {
+	case APPLYING:
+		return "applying"
+	case DEPLOYING:
+		return "deploying"
+	case IDLE:
+		return "idle"
+	case RUNNING:
+		return "running"
+	case STOPPED:
+		return "stopped"
+	default:
+		return ""
+	}
+}
+
 type Server struct {
 	ID          int64       `xorm:"id autoincr pk"`
 	Name        string      `xorm:"name"`
 	AppOwner    string      `xorm:"app_owner"`
 	AppName     string      `xorm:"app_name"`
-	AppType     AppType     `xorm:"app_type"`
+	AppType    	string     	`xorm:"app_type"`
 	IP          string      `xorm:"ip"`
 	State       ServerState `xorm:"state"`
 	Owner       string      `xorm:"owner"`
@@ -103,3 +120,8 @@ func UpdateServerAfterApply(name, ip string) (bool, error) {
 	return true,nil
 }
 
+func GetServerByOwnerName(name string) ([]*Server, error) {
+	var servers []*Server
+	err := x.Table("server").Where(builder.Eq{"owner": name}).Find(&servers)
+	return servers, err
+}

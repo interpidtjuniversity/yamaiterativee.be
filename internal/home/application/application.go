@@ -39,6 +39,11 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 	appDataBase := c.Query("appDataBase")
 	appBusinessDomain := c.Query("appBusinessDomain")
 	imgBase64 := c.Query("image")[22:]
+	appImportRepoUrl := c.Query("yamaHubUrl")
+
+	if db.ApplicationIsExist(userName, repoName) {
+		return []byte(fmt.Sprintf("user: %s already has application: %s", userName, repoName))
+	}
 	newApplication := db.Application{Owner: userName, AppName: repoName, Description: description, ApplicationAuth: appAuth, ApplicationImage: appImage,
 		ApplicationRegistry: appRegistry, ApplicationTrace: appTrace, ApplicationDataBase: appDataBase, ApplicationBusinessDomain: appBusinessDomain,
 		ApplicationDomainName: fmt.Sprintf("%s.%s", userName, repoName),Users:  strings.Split(members,","),
@@ -48,22 +53,34 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 	}
 
 	// 1. set up git repo(invoke grpc in YamaHub)
-	appCreateRes, err :=invokerImpl.InvokeCreateApplicationService(invokerarg.CreateApplicationOptions{
-		Description: description ,
-		UserName: userName,
-		/**
+	if appImportRepoUrl=="" {
+		appCreateRes, err := invokerImpl.InvokeCreateApplicationService(invokerarg.CreateApplicationOptions{
+			Description: description,
+			UserName:    userName,
+			/**
 			1:公司内部
 			2:团队内部
 			3:个人
-		*/
-		IsPrivate: appAuth=="3",
-		AutoInit:  false,
-		RepoName:  repoName,
-	})
-	if err!=nil {
-		//return []byte(fmt.Errorf("failed to create application:%s, %s", repoName, err).Error())
+			*/
+			IsPrivate: appAuth == "3",
+			AutoInit:  false,
+			RepoName:  repoName,
+		})
+		if err != nil {
+			return []byte(fmt.Errorf("failed to create application:%s, %s", repoName, err).Error())
+		}
+		newApplication.RepoUrl = appCreateRes.CloneUrl
+	} else {
+		newApplication.RepoUrl = appImportRepoUrl
 	}
-	newApplication.RepoUrl = appCreateRes.CloneUrl
+	// 4. set up database
+	if err := buildUpApplicationDataBase(&newApplication); err!=nil {
+		return []byte(fmt.Errorf("error while buildup application database, err %s", err).Error())
+	}
+	// 3. set up domain
+	if err := buildUpApplicationDomain(&newApplication); err!=nil {
+		return []byte(fmt.Errorf("error while buildup application domain, err %s", err).Error())
+	}
 	// 2. set up network,
 	network,err := db.CreateApplicationNetWork(util.GenerateRandomStringWithSuffix(15,""),userName, repoName)
 	if err != nil {
@@ -71,14 +88,6 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 	}
 	newApplication.NetWorkIP = network.IPRange
 	newApplication.NetWorkName = network.NetWorkName
-	// 3. set up domain
-	if err := buildUpApplicationDomain(&newApplication); err!=nil {
-		return []byte(fmt.Errorf("error while buildup application domain, err %s", err).Error())
-	}
-	// 4. set up database
-	if err := buildUpApplicationDataBase(&newApplication); err!=nil {
-		return []byte(fmt.Errorf("error while buildup application database, err %s", err).Error())
-	}
 	// 5. set up config
 	if err := buildUpApplicationConfigWithDataBaseType(&newApplication, configBytes, appDataBase); err!=nil {
 		return []byte(fmt.Errorf("error while buildup application config, err %s", err).Error())
@@ -95,7 +104,7 @@ func buildUpApplicationIcon(application *db.Application, imgSrc string) error {
 		return err
 	} else {
 		name := fmt.Sprintf("%s-%s",application.Owner, application.AppName)
-		success,err := db.PutImage(name, img)
+		success,err := PutImage(name, img)
 		if !success || err!=nil {
 			return err
 		}
@@ -153,7 +162,7 @@ func buildUpApplicationConfigWithDataBaseType(application *db.Application, confi
 
 	dataBaseIP := ""
 	dataBaseType := ""
-	if appDataBase == "Mysql" {
+	if strings.Contains(strings.ToLower(appDataBase), "mysql") {
 		dataBaseIP = resource.GLOBAL_MYSQL_IP
 		dataBaseType = "mysql"
 	} else if appDataBase == "OceanBase" {

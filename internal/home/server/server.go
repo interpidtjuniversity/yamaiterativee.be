@@ -1,6 +1,7 @@
 package server
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 	"yama.io/yamaIterativeE/internal/context"
@@ -16,9 +17,21 @@ const (
 	SERVER_NAME = "%s-%s-%s-%s"
 )
 
+type ServerData struct {
+	Name         string `json:"name"`
+	AppOwner     string `json:"appOwner"`
+	AppName      string `json:"appName"`
+	IP           string `json:"ip"`
+	DeployBranch string `json:"deployBranch"`
+	Env          string `json:"env"`
+	Owner        string `json:"owner"`
+	State        string `json:"state"`
+	ApplyTime    string `json:"applyTime"`
+	IterId       int64  `json:"iterId"`
+}
 
 func NewServer(c *context.Context) []byte {
-	appType := db.AppType(c.QueryInt("appType"))
+	appType := c.Query("appType")
 	iterBranch := c.Query("iterBranch")
 	appOwner := c.Query("appOwner")
 	appName := c.Query("appName")
@@ -43,13 +56,38 @@ func NewServer(c *context.Context) []byte {
 	switch appType {
 	case db.JAVA_SPRING:
 		ip,_ = NewJavaApplicationServer(newServer.Name, networkName)
+		break
 	default:
-		return []byte(fmt.Errorf("error while create server, error: unsupport appType %s", appType.ToString()).Error())
+		return []byte(fmt.Errorf("error while create server, error: unsupport appType %s", appType).Error())
 	}
 	// 2. update server ip
 	db.UpdateServerAfterApply(newServer.Name, ip)
 
 	return nil
+}
+
+
+func GetUserAllServers(c *context.Context) []byte {
+	owner := c.Params(":username")
+	servers, _ := db.GetServerByOwnerName(owner)
+	var serverDatas []ServerData
+	for _, server := range servers {
+		data := ServerData{
+			Name: server.Name,
+			AppOwner: server.AppOwner,
+			AppName: server.AppName,
+			IP: server.IP,
+			DeployBranch: server.Branch,
+			Env: server.Type.ToString(),
+			State: server.State.ToString(),
+			ApplyTime: server.CreatedTime,
+			IterId: server.IterationId,
+			Owner: owner,
+		}
+		serverDatas = append(serverDatas, data)
+	}
+	data, _ := json.Marshal(serverDatas)
+	return data
 }
 
 func NewJavaApplicationServer(containerName, network string) (string, error){
