@@ -8,8 +8,8 @@ import (
 
 const (
 	OSS_ENDPOINT = "https://oss-cn-hangzhou.aliyuncs.com"
-	ACCESS_KEY = "LTAI5tJ8otAjZGng83ksbpXX"
-	ACCESS_KEY_SECRET = "OfcgDQjx8RyNQSKZ9vD3jt8HzTkc9X"
+	ACCESS_KEY = "xxx"
+	ACCESS_KEY_SECRET = "xxx"
 	BUCKET = "3levelimage"
 )
 

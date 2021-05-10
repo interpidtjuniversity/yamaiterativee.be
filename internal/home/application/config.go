@@ -57,13 +57,6 @@ func InitConfig() {
 
 func initJavaSpringConfig() {
 	JavaSpringConfig = db.GetJavaSpringConfig()
-	// consul use yamaiterativee proxy
-	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_HOST, getLocalIPv4Address())
-	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.CONSUL_PORT, 4000)
-	// zipkin use global zipkin
-	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_ZIPKIN_IP)
-	// mysql use global mysql
-	(&JavaSpringConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, "jdbc:%s://%s:3306/%s")
 }
 func initSpringMysqlConfig() {
 	SpringMysqlConfig = db.GetSpringMysqlConfig()
@@ -98,7 +91,7 @@ func GetApplicationConfig(c *context.Context) ([]byte, error) {
 	case "SPRING_CONSUL":
 		config = &SpringConsulConfig
 		break
-	case "SPRING_Actuator":
+	case "SPRING_ACTUATOR":
 		config = &SpringActuatorConfig
 		break
 	case "SPRING_MYSQL":
