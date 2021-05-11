@@ -129,7 +129,7 @@ func GetServerByOwnerName(name string) ([]*Server, error) {
 
 func UpdateServerDeployId(name, deployId string, state ServerState) (bool, error) {
 	server := &Server{DeployId: deployId, State: state}
-	_, err := x.Table("server").Where(builder.Eq{"name": name}).Update(server)
+	_, err := x.Table("server").Cols("state", "deploy_id").Where(builder.Eq{"name": name}).Update(server)
 	if err!=nil {
 		return false, err
 	}

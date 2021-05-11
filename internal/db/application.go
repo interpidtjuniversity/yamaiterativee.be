@@ -96,3 +96,48 @@ func GetApplicationRepoByOwnerAndRepo(owner, app string) string {
 	}
 	return application.RepoUrl
 }
+
+func GetApplicationDevConfig(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("dev_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.DevConfig
+}
+
+func GetApplicationStableConfig(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("stable_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.StableConfig
+}
+
+func GetApplicationTestConfig(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("test_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.TestConfig
+}
+
+func GetApplicationPreConfig(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("pre_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.PreConfig
+}
+
+func GetApplicationProdConfig(owner, app string) string {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("prod_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.ProdConfig
+}

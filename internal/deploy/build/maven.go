@@ -18,9 +18,7 @@ func MavenCompile(path string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	if bufErr.Len() > 0{
-		return nil, fmt.Errorf("error while execute git clone, err: %s", bufErr.String())
-	}
+	bufOut.Write(bufErr.Bytes())
 	return bufOut.Bytes(), nil
 }
 

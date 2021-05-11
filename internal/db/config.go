@@ -16,6 +16,8 @@ func (c *Config) SetConfigItem(key string, value interface{}) {
 			return
 		}
 	}
+	newItem := ConfigItem{Key: key, Value: value}
+	c.ConfigItems = append(c.ConfigItems, newItem)
 }
 
 func (c *Config) GetConfigItem(key string) interface{} {

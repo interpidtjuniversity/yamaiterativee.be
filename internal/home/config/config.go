@@ -1,4 +1,4 @@
-package application
+package config
 
 import (
 	"encoding/json"
@@ -6,7 +6,6 @@ import (
 	"net"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
-	"yama.io/yamaIterativeE/internal/resource"
 )
 
 var (
@@ -28,7 +27,7 @@ type JavaSpringDynamicConfig struct {
 	DATABASE_UN  string
 	DATABASE_PD  string
 	HOST_NAME    string
-	HOST_TAGs    string
+	HOST_TAGS    string
 	INSTANCE_ID  string
 	APP_NAME     string
 }
@@ -38,7 +37,7 @@ var JAVA_SPRING_DYNAMIC_CONFIG = JavaSpringDynamicConfig{
 	CONSUL_PORT:  "spring.cloud.consul.port",
 	ZIPKIN_URL:   "spring.zipkin.base-url",
 	HOST_NAME:    "spring.cloud.consul.discovery.hostname",
-	HOST_TAGs:    "spring.cloud.consul.discovery.tags",
+	HOST_TAGS:    "spring.cloud.consul.discovery.tags",
 	INSTANCE_ID:  "spring.cloud.consul.discovery.instance-id",
 	APP_NAME:     "spring.application.name",
 	DATABASE_URL: "spring.datasource.url",
@@ -72,7 +71,7 @@ func initSpringConsulConfig() {
 func initSpringZipkinConfig() {
 	SpringZipkinConfig = db.GetSpringZipkinConfig()
 	// zipkin use global zipkin
-	(&SpringZipkinConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, resource.GLOBAL_ZIPKIN_IP)
+	(&SpringZipkinConfig).SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, "http://%s:9411")
 }
 func initSpringGRPCConfig() {
 	SpringGRPCConfig = db.GetSpringGRPCConfig()

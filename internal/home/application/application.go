@@ -10,6 +10,7 @@ import (
 	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerarg"
+	"yama.io/yamaIterativeE/internal/home/config"
 	"yama.io/yamaIterativeE/internal/resource"
 	"yama.io/yamaIterativeE/internal/util"
 )
@@ -160,13 +161,15 @@ func buildUpApplicationDataBase(application *db.Application) error {
 	return nil
 }
 
+
+
 func buildUpApplicationConfigWithDataBaseType(application *db.Application, configs []byte, appDataBase string) error{
 	var configItems []db.ConfigItem
 	if err := json.Unmarshal(configs, &configItems); err!=nil {
 		return err
 	}
-	config := db.Config{ConfigItems: configItems}
-	pattern := (&config).GetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL).(string)
+	cfg := db.Config{ConfigItems: configItems}
+	pattern := (&cfg).GetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL).(string)
 
 	dataBaseIP := ""
 	dataBaseType := ""
@@ -177,25 +180,26 @@ func buildUpApplicationConfigWithDataBaseType(application *db.Application, confi
 	} else if appDataBase == "Oracle" {
 	} else if appDataBase == "Sqlite3" {
 	}
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.ZIPKIN_URL, fmt.Sprintf("http://%s:9411", resource.GLOBAL_ZIPKIN_IP))
 
-	config.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_dev", application.Owner, application.AppName)))
-	data, _:= json.Marshal(config)
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_dev", application.Owner, application.AppName)))
+	data, _:= json.Marshal(cfg)
 	application.DevConfig = string(data)
 
-	config.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_test", application.Owner, application.AppName)))
-	data, _= json.Marshal(config)
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_test", application.Owner, application.AppName)))
+	data, _= json.Marshal(cfg)
 	application.TestConfig = string(data)
 
-	config.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_stable", application.Owner, application.AppName)))
-	data, _= json.Marshal(config)
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_stable", application.Owner, application.AppName)))
+	data, _= json.Marshal(cfg)
 	application.StableConfig = string(data)
 
-	config.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_pre", application.Owner, application.AppName)))
-	data, _= json.Marshal(config)
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_pre", application.Owner, application.AppName)))
+	data, _= json.Marshal(cfg)
 	application.PreConfig = string(data)
 
-	config.SetConfigItem(JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_prod", application.Owner, application.AppName)))
-	data, _= json.Marshal(config)
+	cfg.SetConfigItem(config.JAVA_SPRING_DYNAMIC_CONFIG.DATABASE_URL, fmt.Sprintf(pattern, dataBaseType, dataBaseIP, fmt.Sprintf("%s_%s_prod", application.Owner, application.AppName)))
+	data, _= json.Marshal(cfg)
 	application.ProdConfig = string(data)
 
 	return nil

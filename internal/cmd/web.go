@@ -11,6 +11,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/form"
 	"yama.io/yamaIterativeE/internal/home/application"
+	"yama.io/yamaIterativeE/internal/home/config"
 	"yama.io/yamaIterativeE/internal/home/iterations"
 	"yama.io/yamaIterativeE/internal/home/server"
 	"yama.io/yamaIterativeE/internal/home/workbench"
@@ -79,9 +80,9 @@ func runWeb(c *cli.Context) error {
 	application.InitAliYunDNS()
 	application.InitAliYunOSS()
 	// init application config(usage in create new application)
-	application.InitConfig()
+	config.InitConfig()
 	// reload application network
-	application.ResetApplicationNetwork()
+	config.ResetApplicationNetwork()
 	consul.InitConsul()
 
 	m := newMacaron()
@@ -104,7 +105,7 @@ func runWeb(c *cli.Context) error {
 					m.Get("/allusers", application.GetAllUsers)
 
 					m.Group("/optionconfig", func() {
-						m.Get("/:key", application.GetApplicationConfig)
+						m.Get("/:key", config.GetApplicationConfig)
 					})
 				})
 

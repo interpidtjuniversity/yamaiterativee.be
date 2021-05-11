@@ -11,6 +11,7 @@ var (
 	BUILD_PATH = "/var/run/yama/yamaIterativeE/repo/%s"
 	BUILD_LOG_PATH = "/var/run/yama/yamaIterativeE/repo/%s/build.log"
 	BUILD_RESOURCE_PATH = "/var/run/yama/yamaIterativeE/repo/%s/%s/target/"
+	APPLICATION_PROPERTIES_PATH = "/var/run/yama/yamaIterativeE/repo/%s/%s/src/main/resources/application.properties"
 )
 
 func Clone(repoPath, branchName, tmpDir, appName string) ([]byte, string, error) {
@@ -29,8 +30,6 @@ func Clone(repoPath, branchName, tmpDir, appName string) ([]byte, string, error)
 	if err != nil {
 		return nil, "", err
 	}
-	if bufErr.Len() > 0{
-		return nil, "", fmt.Errorf("error while execute git clone, err: %s", bufErr.String())
-	}
+	bufOut.Write(bufErr.Bytes())
 	return bufOut.Bytes(), fmt.Sprintf("%s/%s",workDir, appName),nil
 }
