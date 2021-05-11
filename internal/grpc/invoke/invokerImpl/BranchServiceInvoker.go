@@ -74,5 +74,26 @@ func InvokeQueryMasterLatestCommitIdService(ownerName, repoName string) (string,
 		RepoName: repoName,
 	})
 
-	return response.CommitId, err
+	if response!=nil {
+		return response.CommitId, err
+	}
+	return "", err
+}
+
+func InvokeQueryAppAllBranchesService(ownerName, repoName string) ([]string, error) {
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	response, err := client.QueryAppAllBranch(context.Background(), &invoke.QueryAppAllBranchRequest{
+		AppName: repoName,
+		AppOwner: ownerName,
+	})
+
+	if response != nil {
+		return response.AppBranches, err
+	}
+	return nil, err
 }

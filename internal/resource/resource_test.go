@@ -6,7 +6,7 @@ import (
 )
 
 func TestCreateDataBaseInGlobalDataBase(t *testing.T) {
-	initGlobalMysql("172.16.1.4")
-	err := CreateDataBaseInGlobalDataBase("Mysql", "root_app01_prod")
+	initGlobalMysql("172.16.1.2")
+	err := CreateDataBaseInGlobalDataBase("SPRING_MYSQL", "interpidtjuniversity_miniselfop_dev")
 	assert.Nil(t, err)
 }

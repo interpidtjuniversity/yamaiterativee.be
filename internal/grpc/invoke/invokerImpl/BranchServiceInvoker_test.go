@@ -30,3 +30,9 @@ func TestInvokeCreateBranchService(t *testing.T) {
 	})
 	assert.Nil(t, err)
 }
+
+func TestInvokeQueryAppAllBranchesService(t *testing.T) {
+	branches, err := InvokeQueryAppAllBranchesService("interpidtjuniversity","init")
+	assert.Nil(t, err)
+	fmt.Print(branches)
+}

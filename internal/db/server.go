@@ -89,6 +89,7 @@ type Server struct {
 	PortMapping string      `xorm:"port_mapping"`
 	CreatedTime string      `xorm:"created_time"`
 	IterationId int64       `xorm:"iteration_id"`
+	DeployId    string      `xorm:"deploy_id"`
 }
 
 func InsertServer(server *Server) (bool, error) {
@@ -124,4 +125,22 @@ func GetServerByOwnerName(name string) ([]*Server, error) {
 	var servers []*Server
 	err := x.Table("server").Where(builder.Eq{"owner": name}).Find(&servers)
 	return servers, err
+}
+
+func UpdateServerDeployId(name, deployId string, state ServerState) (bool, error) {
+	server := &Server{DeployId: deployId, State: state}
+	_, err := x.Table("server").Where(builder.Eq{"name": name}).Update(server)
+	if err!=nil {
+		return false, err
+	}
+	return true,nil
+}
+
+func GetDeployIdByServerName(name string) (string, error) {
+	server := new(Server)
+	exist, err := x.Table("server").Cols("deploy_id").Where(builder.Eq{"name":name}).Get(server)
+	if err!=nil || !exist {
+		return "", err
+	}
+	return server.DeployId, nil
 }

@@ -20,8 +20,16 @@ func GetAllUsers(c *context.Context) []byte{
 	return data
 }
 
-func ImportApplication(c *context.Context) []byte {
-	return nil
+func GetAppAllBranch(c *context.Context) []byte {
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+
+	branches, err := invokerImpl.InvokeQueryAppAllBranchesService(appOwner, appName)
+	if err!=nil {
+		return []byte(fmt.Sprintf("error while invoke QueryAppAllBranchesService, err: %s", err))
+	}
+	data, _ := json.Marshal(branches)
+	return data
 }
 
 

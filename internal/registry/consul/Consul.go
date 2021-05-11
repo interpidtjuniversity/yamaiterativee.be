@@ -8,7 +8,7 @@ import (
 )
 
 var consul = &Consul{}
-var req = &RequestContext{Registry: fmt.Sprintf("%s:8500", resource.GLOBAL_CONSUL_IP)}
+var req = &RequestContext{}
 
 type Consul struct {
 	client        *http.Client
@@ -23,7 +23,8 @@ type RequestContext struct {
 	Service  string
 }
 
-func init() {
+func InitConsul() {
+	req.Registry = fmt.Sprintf("%s:8500", resource.GLOBAL_CONSUL_IP)
 	consul.client = &http.Client{Transport: http.DefaultTransport}
 	consul.agentClient = NewAgentClient(consul.client)
 	consul.catalogClient = NewCatalogClient(consul.client)

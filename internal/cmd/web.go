@@ -82,6 +82,7 @@ func runWeb(c *cli.Context) error {
 	application.InitConfig()
 	// reload application network
 	application.ResetApplicationNetwork()
+	consul.InitConsul()
 
 	m := newMacaron()
 
@@ -100,12 +101,15 @@ func runWeb(c *cli.Context) error {
 			m.Group("/application", func() {
 				m.Group("/newapplication", func() {
 					m.Post("/new", binding.BindIgnErr(form.Application{}), application.NewApplication)
-					m.Post("/import", application.ImportApplication)
 					m.Get("/allusers", application.GetAllUsers)
 
 					m.Group("/optionconfig", func() {
 						m.Get("/:key", application.GetApplicationConfig)
 					})
+				})
+
+				m.Group("/branches", func() {
+					m.Post("/all", application.GetAppAllBranch)
 				})
 			})
 
