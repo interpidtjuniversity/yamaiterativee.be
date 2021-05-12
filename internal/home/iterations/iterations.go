@@ -2,9 +2,18 @@ package iterations
 
 import (
 	"encoding/json"
+	"fmt"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 )
+
+type IterationConfigGroup struct {
+	DevConfig    []db.ConfigItem `json:"devConfig"`
+	StableConfig []db.ConfigItem `json:"stableConfig"`
+	TestConfig   []db.ConfigItem `json:"testConfig"`
+	PreConfig    []db.ConfigItem `json:"preConfig"`
+	ProdConfig   []db.ConfigItem `json:"prodConfig"`
+}
 
 type IterationData struct {
 	Id          int64        `json:"id"`
@@ -71,4 +80,161 @@ func GetUserAllIterations(context *context.Context) []byte {
 
 	data, _ := json.Marshal(iterationDatas)
 	return data
+}
+
+func GetIterationConfig(c *context.Context) []byte {
+	iterId := c.ParamsInt64(":iterId")
+	iteration, err := db.GetIterationConfigByIterId(iterId)
+	if err != nil {
+		return []byte(fmt.Sprintf("error while query iteration config, err: %v", err))
+	}
+	config := new(db.Config)
+
+	json.Unmarshal([]byte(iteration.DevConfig), config)
+	var devConfigItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			devConfigItems = append(devConfigItems, v)
+		}
+	}
+
+	json.Unmarshal([]byte(iteration.StableConfig), config)
+	var stableConfigItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			stableConfigItems = append(stableConfigItems, v)
+		}
+	}
+
+	json.Unmarshal([]byte(iteration.TestConfig), config)
+	var testConfigItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			testConfigItems = append(testConfigItems, v)
+		}
+	}
+
+	json.Unmarshal([]byte(iteration.PreConfig), config)
+	var preConfigItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			preConfigItems = append(preConfigItems, v)
+		}
+	}
+
+	json.Unmarshal([]byte(iteration.ProdConfig), config)
+	var prodConfigItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			prodConfigItems = append(prodConfigItems, v)
+		}
+	}
+
+
+	configs := IterationConfigGroup{
+		DevConfig: devConfigItems,
+		StableConfig: stableConfigItems,
+		TestConfig: testConfigItems,
+		PreConfig: preConfigItems,
+		ProdConfig: prodConfigItems,
+	}
+	data, _ := json.Marshal(configs)
+	return data
+}
+
+
+func GetIterationConfigByEnv(c *context.Context) []byte {
+	iterId := c.ParamsInt64(":iterId")
+	env := c.Params(":env")
+	var cfg string
+	config := new(db.Config)
+	switch env {
+	case "dev":
+		cfg = db.GetIterationDevConfig(iterId)
+		break
+	case "stable":
+		cfg = db.GetIterationStableConfig(iterId)
+		break
+	case "test":
+		cfg = db.GetIterationTestConfig(iterId)
+		break
+	case "pre":
+		cfg = db.GetIterationPreConfig(iterId)
+		break
+	case "prod":
+		cfg = db.GetIterationProdConfig(iterId)
+	}
+	json.Unmarshal([]byte(cfg), config)
+
+	var configItems []db.ConfigItem
+	for _, v := range config.ConfigItems {
+		if v.Displayable {
+			v.Changeable = true
+			configItems = append(configItems, v)
+		}
+	}
+	data, _ := json.Marshal(configItems)
+	return data
+}
+
+func ResetIterationConfig(c *context.Context) []byte {
+	devCfg := c.Query("devConfig")
+	stableCfg := c.Query("stableConfig")
+	testCfg := c.Query("testConfig")
+	preCfg := c.Query("preConfig")
+	prodCfg := c.Query("prodConfig")
+	iterId := c.QueryInt64("iterId")
+
+	devItems := make([]db.ConfigItem,1)
+	json.Unmarshal([]byte(devCfg), &devItems)
+	devConfig := db.Config{
+		ConfigItems: devItems,
+	}
+	devData, _ := json.Marshal(devConfig)
+
+	stableItems := make([]db.ConfigItem,1)
+	json.Unmarshal([]byte(stableCfg), &stableItems)
+	stableConfig := db.Config{
+		ConfigItems: stableItems,
+	}
+	stableData, _ := json.Marshal(stableConfig)
+
+	testItems := make([]db.ConfigItem,1)
+	json.Unmarshal([]byte(testCfg), &testItems)
+	testConfig := db.Config{
+		ConfigItems: testItems,
+	}
+	testData, _ := json.Marshal(testConfig)
+
+	preItems := make([]db.ConfigItem,1)
+	json.Unmarshal([]byte(preCfg), &preItems)
+	preConfig := db.Config{
+		ConfigItems: preItems,
+	}
+	preData, _ := json.Marshal(preConfig)
+
+	prodItems := make([]db.ConfigItem,1)
+	json.Unmarshal([]byte(prodCfg), &prodItems)
+	prodConfig := db.Config{
+		ConfigItems: prodItems,
+	}
+	prodData, _ := json.Marshal(prodConfig)
+
+	iterationWithConfigs := &db.Iteration{
+		DevConfig: string(devData),
+		StableConfig: string(stableData),
+		TestConfig: string(testData),
+		PreConfig: string(preData),
+		ProdConfig: string(prodData),
+	}
+
+	if _, err := db.UpdateIterationConfig(iterId, iterationWithConfigs); err!=nil {
+		return []byte(fmt.Sprintf("error while reset iteration config, err: %v", err))
+	}
+	return nil
 }

@@ -118,6 +118,14 @@ func runWeb(c *cli.Context) error {
 				m.Group("/user/:username", func() {
 					m.Get("/all", iterations.GetUserAllIterations)
 				})
+
+				m.Group("/:iterId", func() {
+					m.Group("/optionconfig", func() {
+						m.Get("", iterations.GetIterationConfig)
+						m.Get("/:env/", iterations.GetIterationConfigByEnv)
+						m.Post("/reset", iterations.ResetIterationConfig)
+					})
+				})
 			})
 
 			m.Group("/server", func() {

@@ -24,6 +24,7 @@ func DeployAppInServer(c *context.Context) []byte {
 	appOwner := c.Query("appOwner")
 	appName := c.Query("appName")
 	deployBranch := c.Query("deployBranch")
+	iterId := c.QueryInt64("iterId")
 
 	//0. check if can deploy
 	last, _ := db.GetDeployIdByServerName(serverName)
@@ -49,27 +50,27 @@ func DeployAppInServer(c *context.Context) []byte {
 		config := new(db.Config)
 		switch serverEnv {
 		case "dev":
-			configString = db.GetApplicationDevConfig(appOwner, appName)
+			configString = db.GetIterationDevConfig(iterId)
 			json.Unmarshal([]byte(configString), config)
 			config.SetConfigItem(config2.JAVA_SPRING_DYNAMIC_CONFIG.HOST_TAGS, "dev")
 			break
 		case "stable":
-			configString = db.GetApplicationStableConfig(appOwner, appName)
+			configString = db.GetIterationStableConfig(iterId)
 			json.Unmarshal([]byte(configString), config)
 			config.SetConfigItem(config2.JAVA_SPRING_DYNAMIC_CONFIG.HOST_TAGS, "stable")
 			break
 		case "test":
-			configString = db.GetApplicationTestConfig(appOwner, appName)
+			configString = db.GetIterationTestConfig(iterId)
 			json.Unmarshal([]byte(configString), config)
 			config.SetConfigItem(config2.JAVA_SPRING_DYNAMIC_CONFIG.HOST_TAGS, "test")
 			break
 		case "pre":
-			configString = db.GetApplicationPreConfig(appOwner, appName)
+			configString = db.GetIterationPreConfig(iterId)
 			json.Unmarshal([]byte(configString), config)
 			config.SetConfigItem(config2.JAVA_SPRING_DYNAMIC_CONFIG.HOST_TAGS, "pre")
 			break
 		case "prod":
-			configString = db.GetApplicationProdConfig(appOwner, appName)
+			configString = db.GetIterationProdConfig(iterId)
 			json.Unmarshal([]byte(configString), config)
 			config.SetConfigItem(config2.JAVA_SPRING_DYNAMIC_CONFIG.HOST_TAGS, "prod")
 		}

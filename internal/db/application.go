@@ -97,6 +97,15 @@ func GetApplicationRepoByOwnerAndRepo(owner, app string) string {
 	return application.RepoUrl
 }
 
+func GetApplicationConfigByOwnerAndRepo(owner, app string) (*Application, error) {
+	application := new(Application)
+	exist, err := x.Table("application").Cols("dev_config", "stable_config", "test_config", "pre_config", "prod_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return nil, err
+	}
+	return application,nil
+}
+
 func GetApplicationDevConfig(owner, app string) string {
 	application := new(Application)
 	exist, err := x.Table("application").Cols("dev_config").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)

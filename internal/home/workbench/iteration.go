@@ -39,11 +39,14 @@ func NewIteration(c *context.Context) []byte{
 	iterType := c.Query("iterType")
 	content := c.Query("content")
 	baseCommit,_ := invokerImpl.InvokeQueryMasterLatestCommitIdService(appOwner, appName)
+	app,_ := db.GetApplicationConfigByOwnerAndRepo(appOwner, appName)
 
 
 	var newIterationFunc = func(session *db.ProxySession) (map[string]interface{}, error){
 		iteration := db.Iteration{IterCreator: creator, IterType: iterType, IterAdmin: admins, OwnerName: appOwner, RepoName: appName,
-			IterBranch: generateIterBranch(), IterState: -1, BaseCommit: baseCommit, Content: content, Title: util.GenerateRandomStringWithPrefix(10,"E")}
+			IterBranch: generateIterBranch(), IterState: -1, BaseCommit: baseCommit, Content: content, Title: util.GenerateRandomStringWithPrefix(10,"E"),
+			DevConfig: app.DevConfig, StableConfig: app.StableConfig, TestConfig: app.TestConfig, PreConfig: app.PreConfig, ProdConfig: app.ProdConfig,
+		}
 		// insert iteration
 		_, err := session.Session.Insert(&iteration)
 		if err != nil {

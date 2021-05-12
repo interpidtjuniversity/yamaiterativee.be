@@ -60,6 +60,11 @@ type Iteration struct {
 	BaseCommit      string         `xorm:"base_commit"`
 	Title           string         `xorm:"title"`
 	Content         string         `xorm:"content"`
+	TestConfig      string         `xorm:"test_config"`
+	ProdConfig      string         `xorm:"prod_config"`
+	DevConfig       string         `xorm:"dev_config"`
+	PreConfig       string         `xorm:"pre_config"`
+	StableConfig    string         `xorm:"stable_config"`
 }
 
 func GetIterationById(id int64) (*Iteration, error){
@@ -99,6 +104,68 @@ func GetIterationByAdmin(adminId string) []*Iteration {
 	}
 	x.Table("iteration").Where(builder.In("id", filterIterIds)).Find(&filterIters)
 	return filterIters
+}
+
+func GetIterationConfigByIterId(iterId int64) (*Iteration, error) {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("dev_config", "stable_config", "test_config", "pre_config", "prod_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return nil, err
+	}
+	return iteration,nil
+}
+
+func GetIterationDevConfig(iterId int64) string {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("dev_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return ""
+	}
+	return iteration.DevConfig
+}
+
+func GetIterationStableConfig(iterId int64) string {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("stable_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return ""
+	}
+	return iteration.StableConfig
+}
+
+func GetIterationTestConfig(iterId int64) string {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("test_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return ""
+	}
+	return iteration.TestConfig
+}
+
+func GetIterationPreConfig(iterId int64) string {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("pre_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return ""
+	}
+	return iteration.PreConfig
+}
+
+func GetIterationProdConfig(iterId int64) string {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("prod_config").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if err!=nil || !exist {
+		return ""
+	}
+	return iteration.ProdConfig
+}
+
+func UpdateIterationConfig(iterId int64, iteration *Iteration) (bool, error) {
+	_, err := x.Table("iteration").Where(builder.Eq{"id": iterId}).Limit(1).Update(iteration)
+	if err!=nil {
+		return false, err
+	}
+	return true, nil
 }
 
 type ErrIterationNotExist struct {
