@@ -12,7 +12,7 @@ type StatusClient struct {
 	client *http.Client
 }
 
-func (client *StatusClient) leader(context *RequestContext) ([]byte, error){
+func (client *StatusClient) leader(context RequestContext) ([]byte, error){
 	request, err := http.NewRequest("GET", fmt.Sprintf(leaderUrl, context.Registry),nil)
 	if err != nil {
 		return nil, err

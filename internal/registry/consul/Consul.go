@@ -1,14 +1,26 @@
 package consul
 
 import (
+	"encoding/json"
 	"fmt"
 	"gopkg.in/macaron.v1"
+	"net"
 	"net/http"
+	"strings"
+	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/registry/consul/meta"
 	"yama.io/yamaIterativeE/internal/resource"
 )
 
 var consul = &Consul{}
-var req = &RequestContext{}
+var req = RequestContext{}
+var EnvInvokeMap = map[string]string{
+	"dev": "stable",
+	"stable": "stable",
+	"test": "test",
+	"pre": "pre",
+	"prod": "prod",
+}
 
 type Consul struct {
 	client        *http.Client
@@ -21,6 +33,7 @@ type Consul struct {
 type RequestContext struct {
 	Registry string
 	Service  string
+	Filter   string
 }
 
 func InitConsul() {
@@ -52,9 +65,61 @@ func GetServices(ctx *macaron.Context) ([]byte, error) {
 
 func GetServiceInstances(ctx *macaron.Context) ([]byte, error) {
 	req.Service = ctx.Params(":service")
-	return consul.healthClient.getServiceInstances(req)
+	serverServiceName := strings.ReplaceAll(req.Service, "-", ".")
+	requestServerIP, _ := getIPAddress(ctx.Req)
+
+	// requestServerType, requestServerGroupId, _ := db.GetServerTypeAndGroupByIP(requestServerIP)
+	requestServerType, requestServerGroupId := "dev", int64(17)
+	if requestServerType == "" {
+		return nil, fmt.Errorf("invild remove host, host: %s", requestServerIP)
+	}
+	// 1. if group exist
+	groupServers, _ := db.GetSameGroupServerByGroupIdAndServiceName(requestServerGroupId, req.Service)
+	// 2. traverse groupServer and find out target service
+	var groupServiceServerIPs []string
+	for _, groupServer := range groupServers {
+		if strings.Contains(groupServer.Name, serverServiceName){
+			groupServiceServerIPs = append(groupServiceServerIPs, groupServer.IP)
+		}
+	}
+	var reqFilters []string
+	if len(groupServiceServerIPs) == 0 {
+		//3. default env map servers
+		reqFilters = append(reqFilters, fmt.Sprintf("%s%sin%sService.Tags", EnvInvokeMap[requestServerType], "%20", "%20"))
+	} else {
+		for _, targetIP := range groupServiceServerIPs {
+			reqFilters = append(reqFilters, fmt.Sprintf("Service.Address==\"%s\"", targetIP))
+		}
+	}
+	filterHealthyServers := make([]meta.HealthyServiceMeta,0)
+	for _, filter := range reqFilters {
+		req.Filter = filter
+		data, _ := consul.healthClient.getServiceInstances(req)
+		healthyServers := make([]meta.HealthyServiceMeta, 1)
+		err := json.Unmarshal(data, &healthyServers)
+		if err != nil {
+			return nil, err
+		}
+		filterHealthyServers = append(filterHealthyServers, healthyServers...)
+	}
+
+	fiterData, _ := json.Marshal(filterHealthyServers)
+
+	return fiterData, nil
 }
 
 func Leader(ctx *macaron.Context) ([]byte, error) {
 	return consul.statusClient.leader(req)
+}
+
+func getIPAddress(req macaron.Request) (string, error) {
+	ip, _, err := net.SplitHostPort(req.RemoteAddr)
+	if err != nil {
+		return "", err
+	}
+	userIP := net.ParseIP(ip)
+	if userIP == nil {
+		return "", err
+	}
+	return userIP.String(), nil
 }

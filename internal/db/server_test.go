@@ -32,3 +32,23 @@ func TestUpdateServerAfterApply(t *testing.T) {
 	_, err := UpdateServerAfterApply("d3358ad5b08311ebb22f_interpidtjuniversity.init.dev", "192.168.255.6")
 	assert.Nil(t, err)
 }
+
+func TestGetSameGroupServerByGroupIdAndServiceName(t *testing.T) {
+	NewEngine()
+	servers, err := GetSameGroupServerByGroupIdAndServiceName(0, "interpidtjuniversity-miniselfop")
+	fmt.Print(len(servers))
+	assert.Nil(t, err)
+}
+
+func TestGetDevServerByAppOwnerAndName(t *testing.T) {
+	NewEngine()
+	servers, err := GetDevServerByAppOwnerAndName("interpidtjuniversity","miniselfop")
+	assert.Nil(t, err)
+	fmt.Print(len(servers))
+}
+
+func TestBranchUpdateServerGroup(t *testing.T) {
+	NewEngine()
+	err := BranchUpdateServerGroup([]string{"0edef0abb19f11eb9274_interpidtjuniversity.miniselfop.dev","24391683b27111eba6c5_interpidtjuniversity.miniselfop.dev"},"")
+	assert.Nil(t, err)
+}

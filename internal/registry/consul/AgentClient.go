@@ -13,7 +13,7 @@ type AgentClient struct {
 	client *http.Client
 }
 
-func (client *AgentClient) ping(context *RequestContext) *http.Response {
+func (client *AgentClient) ping(context RequestContext) *http.Response {
 	request, err := http.NewRequest("GET", fmt.Sprintf(pingUrl, context.Registry),nil)
 	if err != nil {
 		return nil
@@ -22,7 +22,7 @@ func (client *AgentClient) ping(context *RequestContext) *http.Response {
 	return response
 }
 
-func (client *AgentClient) register(request *http.Request, context *RequestContext) *http.Response {
+func (client *AgentClient) register(request *http.Request, context RequestContext) *http.Response {
 	request, err := http.NewRequest("PUT", fmt.Sprintf(registryUrl, context.Registry),request.Body)
 	if err != nil {
 		return nil
@@ -34,7 +34,7 @@ func (client *AgentClient) register(request *http.Request, context *RequestConte
 	return response
 }
 
-func (client *AgentClient) deregister(context *RequestContext) *http.Response {
+func (client *AgentClient) deregister(context RequestContext) *http.Response {
 	request, err := http.NewRequest("PUT", fmt.Sprintf(deRegistryUrl, context.Registry, context.Service),nil)
 	if err != nil {
 		return nil

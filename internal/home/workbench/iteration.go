@@ -24,7 +24,7 @@ func GetOwnerApplications(c *context.Context) []byte {
 	ownerName := c.Params(":ownerName")
 	names, err := invokerImpl.InvokeQueryApplications(ownerName)
 	if err != nil {
-		return nil
+		return []byte("[]")
 	}
 
 	data, _ := json.Marshal(names)

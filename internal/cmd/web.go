@@ -129,6 +129,14 @@ func runWeb(c *cli.Context) error {
 			})
 
 			m.Group("/server", func() {
+				m.Group("/debugroup", func() {
+					m.Post("/make", server.CreateIterationDebugGroup)
+					m.Get("/:iterId", server.QueryIterationDebugGroup)
+					m.Get("/:iterId/:groupId/:serverName", server.DeleteServerInIterationDebugGroup)
+				})
+				m.Group("/:appOwner", func() {
+					m.Get("/:appName", server.GetAppDevServer)
+				})
 				m.Group("/user/:username", func() {
 					m.Get("/all", server.GetUserAllServers)
 				})

@@ -30,6 +30,17 @@ type ServerData struct {
 	IterId       int64  `json:"iterId"`
 }
 
+type GroupServerData struct {
+	// front use
+	Rdm            string `json:"rdm"`
+	AppOwner       string `json:"appOwner"`
+	AppName        string `json:"appName"`
+	AppServer      string `json:"appServer"`
+	// back use
+	AppServerOwner string `json:"appServerOwner"`
+	AppServerState int    `json:"appServerState"`
+}
+
 func NewServer(c *context.Context) []byte {
 	appType := c.Query("appType")
 	iterBranch := c.Query("iterBranch")
@@ -88,6 +99,71 @@ func GetUserAllServers(c *context.Context) []byte {
 	}
 	data, _ := json.Marshal(serverDatas)
 	return data
+}
+
+
+func GetAppDevServer(c *context.Context) []byte {
+	appOwner := c.Params(":appOwner")
+	appName := c.Params(":appName")
+
+	servers, err := db.GetDevServerByAppOwnerAndName(appOwner, appName)
+	if err != nil {
+		return []byte("[]")
+	}
+	names := make([]string, 0)
+	for _, server := range servers {
+		names = append(names, server.Name)
+	}
+	data, _ := json.Marshal(names)
+
+	return data
+}
+
+func CreateIterationDebugGroup(c *context.Context) []byte {
+	groupServerBytes := []byte(c.Query("groupServer"))
+	groupServer := make([]GroupServerData, 1)
+	json.Unmarshal(groupServerBytes, &groupServer)
+	var names []string
+	for _, gs := range groupServer {
+		if gs.AppServer!="" {
+			names = append(names, gs.AppServer)
+		}
+	}
+	groupId := util.GenerateRandomStringWithSuffix(20,"")
+	if err := db.BranchUpdateServerGroup(names, groupId); err!=nil {
+		return []byte(fmt.Sprintf("error while bind group, err: %v", err))
+	}
+
+	return []byte("success")
+}
+
+func QueryIterationDebugGroup(c *context.Context) []byte {
+	iterId := c.ParamsInt64("iterId")
+	servers, _ := db.GetGroupedDevServerByIterId(iterId)
+	var groupIds []string
+	for _, server := range servers {
+		groupIds = append(groupIds, server.GroupId)
+	}
+	allServers, _ := db.BranchQueryServerByGroupId(groupIds)
+
+	groupServerMap := make(map[string][]GroupServerData)
+	for _, server := range allServers {
+		groupServerMap[server.GroupId] = append(groupServerMap[server.GroupId], GroupServerData{
+			AppServer: server.Name,
+			AppServerOwner: server.Owner,
+			AppServerState: int(server.State),
+			AppOwner: server.AppOwner,
+			AppName: server.AppName,
+			Rdm: util.GenerateRandomStringWithSuffix(10,""),
+		})
+	}
+	data, _:= json.Marshal(groupServerMap)
+
+	return data
+}
+
+func DeleteServerInIterationDebugGroup(c *context.Context) []byte {
+	return nil
 }
 
 func NewJavaApplicationServer(containerName, network string) (string, error){

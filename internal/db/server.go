@@ -1,6 +1,10 @@
 package db
 
-import "xorm.io/builder"
+import (
+	"fmt"
+	"strings"
+	"xorm.io/builder"
+)
 
 type ServerType int
 
@@ -79,7 +83,7 @@ type Server struct {
 	Name        string      `xorm:"name"`
 	AppOwner    string      `xorm:"app_owner"`
 	AppName     string      `xorm:"app_name"`
-	AppType    	string     	`xorm:"app_type"`
+	AppType     string      `xorm:"app_type"`
 	IP          string      `xorm:"ip"`
 	State       ServerState `xorm:"state"`
 	Owner       string      `xorm:"owner"`
@@ -90,6 +94,7 @@ type Server struct {
 	CreatedTime string      `xorm:"created_time"`
 	IterationId int64       `xorm:"iteration_id"`
 	DeployId    string      `xorm:"deploy_id"`
+	GroupId     string      `xorm:"group_id"`
 }
 
 func InsertServer(server *Server) (bool, error) {
@@ -143,4 +148,48 @@ func GetDeployIdByServerName(name string) (string, error) {
 		return "", err
 	}
 	return server.DeployId, nil
+}
+
+func GetServerTypeAndGroupByIP(ip string) (string, string, error) {
+	server := new(Server)
+	exist, err := x.Table("server").Cols("name", "group_id").Where(builder.Eq{"ip":ip}).Get(server)
+	if err!=nil || !exist {
+		return "", "", err
+	}
+	array := strings.Split(server.Name, ".")
+	if len(array) != 3{
+		return "", "", err
+	}
+	return array[len(array)-1], server.GroupId, nil
+}
+
+func GetSameGroupServerByGroupIdAndServiceName(groupId int64, serviceName string) ([]*Server, error) {
+	var servers []*Server
+	serviceName = strings.ReplaceAll(serviceName, "-", ".")
+	err := x.Table("server").Cols("name", "ip").Where(builder.Eq{"group_id":groupId}.And(builder.Eq{"state": RUNNING}).And(builder.Like{"name", fmt.Sprintf("%s%s%s", "%", serviceName, "%")})).Find(&servers)
+	return servers, err
+}
+
+func GetDevServerByAppOwnerAndName(appOwner, appName string) ([]*Server, error) {
+	var servers []*Server
+	err := x.Table("server").Cols("name").Where(builder.Eq{"app_owner":appOwner, "app_name":appName, "type":DEV, "group_id":""}).Find(&servers)
+	return servers, err
+}
+
+func GetGroupedDevServerByIterId(iterId int64) ([]*Server, error) {
+	var servers []*Server
+	err := x.Table("server").Cols("name","owner","state","group_id").Where(builder.Eq{"iteration_id":iterId, "type":DEV}.And(builder.Neq{"group_id":""})).Find(&servers)
+	return servers, err
+}
+
+func BranchUpdateServerGroup(names []string, groupId string) error {
+	server := Server{GroupId: groupId}
+	_, err := x.Table("server").Cols("group_id").Where(builder.In("name", names)).Update(&server)
+	return err
+}
+
+func BranchQueryServerByGroupId(groupIds []string) ([]*Server, error) {
+	var servers []*Server
+	err := x.Table("server").Cols("name","app_owner","app_name","owner","state","group_id").Where(builder.In("group_id", groupIds)).Find(&servers)
+	return servers, err
 }

@@ -6,15 +6,14 @@ import (
 	"net/http"
 )
 
-const getServiceInstancesUrl = "http://%s/v1/health/service/%s"
+const getServiceInstancesUrl = "http://%s/v1/health/service/%s?filter=%s"
 
 type HealthClient struct {
 	client *http.Client
 }
 
-func (client *HealthClient) getServiceInstances(context *RequestContext) ([]byte, error) {
-
-	request, err := http.NewRequest("GET", fmt.Sprintf(getServiceInstancesUrl, context.Registry, context.Service),nil)
+func (client *HealthClient) getServiceInstances(context RequestContext) ([]byte, error) {
+	request, err := http.NewRequest("GET", fmt.Sprintf(getServiceInstancesUrl, context.Registry, context.Service, context.Filter),nil)
 	if err != nil {
 		return nil, err
 	}

@@ -12,7 +12,7 @@ type CatalogClient struct {
 	client *http.Client
 }
 
-func (client *CatalogClient) getServices(context *RequestContext) ([]byte, error) {
+func (client *CatalogClient) getServices(context RequestContext) ([]byte, error) {
 
 	request, err := http.NewRequest("GET", fmt.Sprintf(getServicesUrl, context.Registry),nil)
 	if err != nil {
