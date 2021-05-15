@@ -50,6 +50,10 @@ message RegisterMRRequest{
   string repoName = 2;
   string sourceBranch = 3;
   string targetBranch = 4;
+  int64  actionId = 5;
+  int64  stagedId = 6;
+  int64  stepId = 7;
+  repeated string reviewers = 8;
 }
 message RegisterMRResponse{
   string showDiffUri = 1;

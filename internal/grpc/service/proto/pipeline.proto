@@ -1,6 +1,6 @@
 syntax = "proto3";
 package proto;
-option go_package="../../service";
+option go_package="../serviceImpl";
 
 message StartYaMaPipeLineRequest{
   int64 userId = 1;
@@ -13,6 +13,16 @@ message StartYaMaPipeLineResponse{
   bool success = 1;
 }
 
+message PassMergeRequestCodeReviewRequest{
+  int64 actionId = 1;
+  int64 stageId = 2;
+  int64 stepId = 3;
+}
+message PassMergeRequestCodeReviewResponse{
+  bool success = 1;
+}
+
 service YaMaPipeLineService{
   rpc StartYaMaPipeLine(StartYaMaPipeLineRequest) returns (StartYaMaPipeLineResponse) {}
+  rpc PassMergeRequestCodeReview(PassMergeRequestCodeReviewRequest) returns (PassMergeRequestCodeReviewResponse) {}
 }

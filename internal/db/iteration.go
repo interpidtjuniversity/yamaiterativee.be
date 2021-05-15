@@ -168,6 +168,15 @@ func UpdateIterationConfig(iterId int64, iteration *Iteration) (bool, error) {
 	return true, nil
 }
 
+func GetIterationAllAdmins(iterId int64) (*Iteration, error) {
+	iteration := new(Iteration)
+	exist, err := x.Table("iteration").Cols("iter_admin").Where(builder.Eq{"id": iterId}).Limit(1).Get(iteration)
+	if !exist && err!=nil {
+		return nil, err
+	}
+	return iteration, err
+}
+
 type ErrIterationNotExist struct {
 	Args map[string]interface{}
 }

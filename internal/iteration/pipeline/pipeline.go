@@ -210,6 +210,46 @@ func StartPipeline(c *context.Context) ([]byte, error) {
 	return nil,err
 }
 
+func StartPipelineInternal(c *context.Context) ([]byte, error) {
+	//pipelineId := c.ParamsInt64(":pipelineId")
+	//actorName := c.Query("actorName")
+	//iterId := c.Query("iterId")
+	//iterTargetBranch := c.Query("iterTargetBranch")
+	//iterDevelopBranch := c.Query("iterDevelopBranch")
+	//mrCodeReviews := c.Query("mrCodeReviews")
+	//env := c.Query("env")
+	//actionInfo := c.Query("mrInfo")
+	//
+	//// generate by branches
+	//actionGroupInfo := c.Query("actionGroupInfo")
+	//// query by actorName
+	//avatarSrc := c.Query("avatarSrc")
+	//// query by iterId and env
+	//envGroup := c.QueryInt64("envGroup")
+
+	return nil,nil
+}
+
+// callBack for other system
+func PassStep(actionId, stageId, stepId int64) []byte {
+
+	for action:=e.actions.Front(); action!=nil; action = action.Next() {
+		runtimePipeline, _ := action.Value.(*RuntimePipeline)
+		if runtimePipeline.ID == actionId {
+			for _, se := range runtimePipeline.Buckets {
+				if se.StageId == stageId {
+					for _, sp := range se.Steps {
+						if sp.StepId == stepId {
+							sp.Cond = true
+							return []byte("success")
+						}
+					}
+				}
+			}
+		}
+	}
+	return []byte("success")
+}
 
 func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	// check param

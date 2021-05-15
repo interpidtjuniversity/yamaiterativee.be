@@ -64,6 +64,12 @@ func NewIteration(c *context.Context) []byte{
 		if err != nil {
 			return nil, err
 		}
+		blackBranch := db.BlackBranch{Branch: iteration.IterBranch,AppOwner: iteration.OwnerName, AppName: iteration.RepoName}
+		_, err = session.Session.Table("black_branch").Insert(&blackBranch)
+		if err != nil {
+			return nil, err
+		}
+
 		return map[string]interface{}{
 			"iterBranch": iteration.IterBranch,
 			"ownerName": iteration.OwnerName,

@@ -4,7 +4,7 @@
 // 	protoc        (unknown)
 // source: pipeline.proto
 
-package service
+package serviceImpl
 
 import (
 	context "context"
@@ -147,6 +147,116 @@ func (x *StartYaMaPipeLineResponse) GetSuccess() bool {
 	return false
 }
 
+type PassMergeRequestCodeReviewRequest struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	ActionId int64 `protobuf:"varint,1,opt,name=actionId,proto3" json:"actionId,omitempty"`
+	StageId  int64 `protobuf:"varint,2,opt,name=stageId,proto3" json:"stageId,omitempty"`
+	StepId   int64 `protobuf:"varint,3,opt,name=stepId,proto3" json:"stepId,omitempty"`
+}
+
+func (x *PassMergeRequestCodeReviewRequest) Reset() {
+	*x = PassMergeRequestCodeReviewRequest{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pipeline_proto_msgTypes[2]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PassMergeRequestCodeReviewRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PassMergeRequestCodeReviewRequest) ProtoMessage() {}
+
+func (x *PassMergeRequestCodeReviewRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_pipeline_proto_msgTypes[2]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PassMergeRequestCodeReviewRequest.ProtoReflect.Descriptor instead.
+func (*PassMergeRequestCodeReviewRequest) Descriptor() ([]byte, []int) {
+	return file_pipeline_proto_rawDescGZIP(), []int{2}
+}
+
+func (x *PassMergeRequestCodeReviewRequest) GetActionId() int64 {
+	if x != nil {
+		return x.ActionId
+	}
+	return 0
+}
+
+func (x *PassMergeRequestCodeReviewRequest) GetStageId() int64 {
+	if x != nil {
+		return x.StageId
+	}
+	return 0
+}
+
+func (x *PassMergeRequestCodeReviewRequest) GetStepId() int64 {
+	if x != nil {
+		return x.StepId
+	}
+	return 0
+}
+
+type PassMergeRequestCodeReviewResponse struct {
+	state         protoimpl.MessageState
+	sizeCache     protoimpl.SizeCache
+	unknownFields protoimpl.UnknownFields
+
+	Success bool `protobuf:"varint,1,opt,name=success,proto3" json:"success,omitempty"`
+}
+
+func (x *PassMergeRequestCodeReviewResponse) Reset() {
+	*x = PassMergeRequestCodeReviewResponse{}
+	if protoimpl.UnsafeEnabled {
+		mi := &file_pipeline_proto_msgTypes[3]
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		ms.StoreMessageInfo(mi)
+	}
+}
+
+func (x *PassMergeRequestCodeReviewResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*PassMergeRequestCodeReviewResponse) ProtoMessage() {}
+
+func (x *PassMergeRequestCodeReviewResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_pipeline_proto_msgTypes[3]
+	if protoimpl.UnsafeEnabled && x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use PassMergeRequestCodeReviewResponse.ProtoReflect.Descriptor instead.
+func (*PassMergeRequestCodeReviewResponse) Descriptor() ([]byte, []int) {
+	return file_pipeline_proto_rawDescGZIP(), []int{3}
+}
+
+func (x *PassMergeRequestCodeReviewResponse) GetSuccess() bool {
+	if x != nil {
+		return x.Success
+	}
+	return false
+}
+
 var File_pipeline_proto protoreflect.FileDescriptor
 
 var file_pipeline_proto_rawDesc = []byte{
@@ -163,15 +273,34 @@ var file_pipeline_proto_rawDesc = []byte{
 	0x22, 0x35, 0x0a, 0x19, 0x53, 0x74, 0x61, 0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70,
 	0x65, 0x4c, 0x69, 0x6e, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x12, 0x18, 0x0a,
 	0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28, 0x08, 0x52, 0x07,
-	0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0x6f, 0x0a, 0x13, 0x59, 0x61, 0x4d, 0x61, 0x50,
-	0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69, 0x63, 0x65, 0x12, 0x58,
-	0x0a, 0x11, 0x53, 0x74, 0x61, 0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c,
-	0x69, 0x6e, 0x65, 0x12, 0x1f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x74, 0x61, 0x72,
-	0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x52, 0x65, 0x71,
-	0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x53, 0x74, 0x61,
-	0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x52, 0x65,
-	0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x42, 0x07, 0x5a, 0x05, 0x2e, 0x2e, 0x2f, 0x70,
-	0x62, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
+	0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x22, 0x71, 0x0a, 0x21, 0x50, 0x61, 0x73, 0x73, 0x4d,
+	0x65, 0x72, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x6f, 0x64, 0x65, 0x52,
+	0x65, 0x76, 0x69, 0x65, 0x77, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x12, 0x1a, 0x0a, 0x08,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x18, 0x01, 0x20, 0x01, 0x28, 0x03, 0x52, 0x08,
+	0x61, 0x63, 0x74, 0x69, 0x6f, 0x6e, 0x49, 0x64, 0x12, 0x18, 0x0a, 0x07, 0x73, 0x74, 0x61, 0x67,
+	0x65, 0x49, 0x64, 0x18, 0x02, 0x20, 0x01, 0x28, 0x03, 0x52, 0x07, 0x73, 0x74, 0x61, 0x67, 0x65,
+	0x49, 0x64, 0x12, 0x16, 0x0a, 0x06, 0x73, 0x74, 0x65, 0x70, 0x49, 0x64, 0x18, 0x03, 0x20, 0x01,
+	0x28, 0x03, 0x52, 0x06, 0x73, 0x74, 0x65, 0x70, 0x49, 0x64, 0x22, 0x3e, 0x0a, 0x22, 0x50, 0x61,
+	0x73, 0x73, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x6f,
+	0x64, 0x65, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65,
+	0x12, 0x18, 0x0a, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x18, 0x01, 0x20, 0x01, 0x28,
+	0x08, 0x52, 0x07, 0x73, 0x75, 0x63, 0x63, 0x65, 0x73, 0x73, 0x32, 0xe4, 0x01, 0x0a, 0x13, 0x59,
+	0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x53, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x12, 0x58, 0x0a, 0x11, 0x53, 0x74, 0x61, 0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50,
+	0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e, 0x65, 0x12, 0x1f, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e,
+	0x53, 0x74, 0x61, 0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c, 0x69, 0x6e,
+	0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x1a, 0x20, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f,
+	0x2e, 0x53, 0x74, 0x61, 0x72, 0x74, 0x59, 0x61, 0x4d, 0x61, 0x50, 0x69, 0x70, 0x65, 0x4c, 0x69,
+	0x6e, 0x65, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22, 0x00, 0x12, 0x73, 0x0a, 0x1a,
+	0x50, 0x61, 0x73, 0x73, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74,
+	0x43, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x12, 0x28, 0x2e, 0x70, 0x72, 0x6f,
+	0x74, 0x6f, 0x2e, 0x50, 0x61, 0x73, 0x73, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75,
+	0x65, 0x73, 0x74, 0x43, 0x6f, 0x64, 0x65, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x52, 0x65, 0x71,
+	0x75, 0x65, 0x73, 0x74, 0x1a, 0x29, 0x2e, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x2e, 0x50, 0x61, 0x73,
+	0x73, 0x4d, 0x65, 0x72, 0x67, 0x65, 0x52, 0x65, 0x71, 0x75, 0x65, 0x73, 0x74, 0x43, 0x6f, 0x64,
+	0x65, 0x52, 0x65, 0x76, 0x69, 0x65, 0x77, 0x52, 0x65, 0x73, 0x70, 0x6f, 0x6e, 0x73, 0x65, 0x22,
+	0x00, 0x42, 0x0f, 0x5a, 0x0d, 0x2e, 0x2e, 0x2f, 0x2e, 0x2e, 0x2f, 0x73, 0x65, 0x72, 0x76, 0x69,
+	0x63, 0x65, 0x62, 0x06, 0x70, 0x72, 0x6f, 0x74, 0x6f, 0x33,
 }
 
 var (
@@ -186,16 +315,20 @@ func file_pipeline_proto_rawDescGZIP() []byte {
 	return file_pipeline_proto_rawDescData
 }
 
-var file_pipeline_proto_msgTypes = make([]protoimpl.MessageInfo, 2)
+var file_pipeline_proto_msgTypes = make([]protoimpl.MessageInfo, 4)
 var file_pipeline_proto_goTypes = []interface{}{
-	(*StartYaMaPipeLineRequest)(nil),  // 0: proto.StartYaMaPipeLineRequest
-	(*StartYaMaPipeLineResponse)(nil), // 1: proto.StartYaMaPipeLineResponse
+	(*StartYaMaPipeLineRequest)(nil),           // 0: proto.StartYaMaPipeLineRequest
+	(*StartYaMaPipeLineResponse)(nil),          // 1: proto.StartYaMaPipeLineResponse
+	(*PassMergeRequestCodeReviewRequest)(nil),  // 2: proto.PassMergeRequestCodeReviewRequest
+	(*PassMergeRequestCodeReviewResponse)(nil), // 3: proto.PassMergeRequestCodeReviewResponse
 }
 var file_pipeline_proto_depIdxs = []int32{
 	0, // 0: proto.YaMaPipeLineService.StartYaMaPipeLine:input_type -> proto.StartYaMaPipeLineRequest
-	1, // 1: proto.YaMaPipeLineService.StartYaMaPipeLine:output_type -> proto.StartYaMaPipeLineResponse
-	1, // [1:2] is the sub-list for method output_type
-	0, // [0:1] is the sub-list for method input_type
+	2, // 1: proto.YaMaPipeLineService.PassMergeRequestCodeReview:input_type -> proto.PassMergeRequestCodeReviewRequest
+	1, // 2: proto.YaMaPipeLineService.StartYaMaPipeLine:output_type -> proto.StartYaMaPipeLineResponse
+	3, // 3: proto.YaMaPipeLineService.PassMergeRequestCodeReview:output_type -> proto.PassMergeRequestCodeReviewResponse
+	2, // [2:4] is the sub-list for method output_type
+	0, // [0:2] is the sub-list for method input_type
 	0, // [0:0] is the sub-list for extension type_name
 	0, // [0:0] is the sub-list for extension extendee
 	0, // [0:0] is the sub-list for field type_name
@@ -231,6 +364,30 @@ func file_pipeline_proto_init() {
 				return nil
 			}
 		}
+		file_pipeline_proto_msgTypes[2].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PassMergeRequestCodeReviewRequest); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
+		file_pipeline_proto_msgTypes[3].Exporter = func(v interface{}, i int) interface{} {
+			switch v := v.(*PassMergeRequestCodeReviewResponse); i {
+			case 0:
+				return &v.state
+			case 1:
+				return &v.sizeCache
+			case 2:
+				return &v.unknownFields
+			default:
+				return nil
+			}
+		}
 	}
 	type x struct{}
 	out := protoimpl.TypeBuilder{
@@ -238,7 +395,7 @@ func file_pipeline_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: file_pipeline_proto_rawDesc,
 			NumEnums:      0,
-			NumMessages:   2,
+			NumMessages:   4,
 			NumExtensions: 0,
 			NumServices:   1,
 		},
@@ -265,6 +422,7 @@ const _ = grpc.SupportPackageIsVersion6
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://godoc.org/google.golang.org/grpc#ClientConn.NewStream.
 type YaMaPipeLineServiceClient interface {
 	StartYaMaPipeLine(ctx context.Context, in *StartYaMaPipeLineRequest, opts ...grpc.CallOption) (*StartYaMaPipeLineResponse, error)
+	PassMergeRequestCodeReview(ctx context.Context, in *PassMergeRequestCodeReviewRequest, opts ...grpc.CallOption) (*PassMergeRequestCodeReviewResponse, error)
 }
 
 type yaMaPipeLineServiceClient struct {
@@ -284,9 +442,19 @@ func (c *yaMaPipeLineServiceClient) StartYaMaPipeLine(ctx context.Context, in *S
 	return out, nil
 }
 
+func (c *yaMaPipeLineServiceClient) PassMergeRequestCodeReview(ctx context.Context, in *PassMergeRequestCodeReviewRequest, opts ...grpc.CallOption) (*PassMergeRequestCodeReviewResponse, error) {
+	out := new(PassMergeRequestCodeReviewResponse)
+	err := c.cc.Invoke(ctx, "/proto.YaMaPipeLineService/PassMergeRequestCodeReview", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // YaMaPipeLineServiceServer is the server API for YaMaPipeLineService service.
 type YaMaPipeLineServiceServer interface {
 	StartYaMaPipeLine(context.Context, *StartYaMaPipeLineRequest) (*StartYaMaPipeLineResponse, error)
+	PassMergeRequestCodeReview(context.Context, *PassMergeRequestCodeReviewRequest) (*PassMergeRequestCodeReviewResponse, error)
 }
 
 // UnimplementedYaMaPipeLineServiceServer can be embedded to have forward compatible implementations.
@@ -295,6 +463,9 @@ type UnimplementedYaMaPipeLineServiceServer struct {
 
 func (*UnimplementedYaMaPipeLineServiceServer) StartYaMaPipeLine(context.Context, *StartYaMaPipeLineRequest) (*StartYaMaPipeLineResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method StartYaMaPipeLine not implemented")
+}
+func (*UnimplementedYaMaPipeLineServiceServer) PassMergeRequestCodeReview(context.Context, *PassMergeRequestCodeReviewRequest) (*PassMergeRequestCodeReviewResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method PassMergeRequestCodeReview not implemented")
 }
 
 func RegisterYaMaPipeLineServiceServer(s *grpc.Server, srv YaMaPipeLineServiceServer) {
@@ -319,6 +490,24 @@ func _YaMaPipeLineService_StartYaMaPipeLine_Handler(srv interface{}, ctx context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _YaMaPipeLineService_PassMergeRequestCodeReview_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PassMergeRequestCodeReviewRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(YaMaPipeLineServiceServer).PassMergeRequestCodeReview(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.YaMaPipeLineService/PassMergeRequestCodeReview",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(YaMaPipeLineServiceServer).PassMergeRequestCodeReview(ctx, req.(*PassMergeRequestCodeReviewRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _YaMaPipeLineService_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "proto.YaMaPipeLineService",
 	HandlerType: (*YaMaPipeLineServiceServer)(nil),
@@ -326,6 +515,10 @@ var _YaMaPipeLineService_serviceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "StartYaMaPipeLine",
 			Handler:    _YaMaPipeLineService_StartYaMaPipeLine_Handler,
+		},
+		{
+			MethodName: "PassMergeRequestCodeReview",
+			Handler:    _YaMaPipeLineService_PassMergeRequestCodeReview_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

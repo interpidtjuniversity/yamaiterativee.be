@@ -12,6 +12,7 @@ type Step struct {
 	Args        []string `xorm:"args" json:"-"`
 	IsPublic    bool     `xorm:"is_public"`
 	Img         string   `xorm:"img"`
+	Type        string   `xorm:"type"`
 }
 
 func BranchQueryStepsByIds(stageId []int64) ([]*Step, error) {

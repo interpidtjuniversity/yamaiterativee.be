@@ -238,3 +238,14 @@ func ResetIterationConfig(c *context.Context) []byte {
 	}
 	return nil
 }
+
+func GetIterationAllUsers(c *context.Context) []byte {
+	iterId := c.ParamsInt64(":iterId")
+	iteration, _ := db.GetIterationAllAdmins(iterId)
+	if iteration == nil {
+		return []byte("[]")
+	}
+
+	data, _ := json.Marshal(iteration.IterAdmin)
+	return data
+}

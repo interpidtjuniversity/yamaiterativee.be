@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"time"
 	"yama.io/yamaIterativeE/internal/db"
 )
 
@@ -66,6 +67,8 @@ type RuntimeStep struct {
 	SuccessChannel chan Message
 	FailureChannel chan Message
 	State          RuntimeStepState
+	Cond           bool
+	Type           string
 }
 
 // message when a step finish
@@ -84,19 +87,31 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 	t.State = Running
 	step := db.StepExec{StepId: t.StepId, StageExecId: t.StageExecId, LogPath: t.LogPath, ExecPath: t.ExecPath, State: Running.ToString()}
 	_, _ = db.InsertStepExec(&step)
-	t.Id = step.ID
+	// sleep to 10
+	time.Sleep(time.Duration(10)*time.Second)
 	// exec
-	ctx := context.Background()
-	commend := exec.CommandContext(ctx, t.Command, t.Args...)
-	commend.Dir = t.ExecPath
-	log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
-	commend.Stdout = log
-	commend.Stderr = log
-	err := commend.Run()
-	if err != nil {
+	if t.Type == "callBack" {
+		// 11. code review
+		for !t.Cond {
+			time.Sleep(time.Duration(5) * time.Second)
+		}
+	} else if t.Type == "command" {
+		// other exec command
+		t.Id = step.ID
+		// exec
+		ctx := context.Background()
+		commend := exec.CommandContext(ctx, t.Command, t.Args...)
+		commend.Dir = t.ExecPath
+		log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
+		commend.Stdout = log
+		commend.Stderr = log
+		err := commend.Run()
+		if err != nil {
+			return nil, err
+		}
 		return nil, err
 	}
-	return nil, err
+	return nil,nil
 }
 
 func (t *RuntimeStep) Success(result interface{}) {

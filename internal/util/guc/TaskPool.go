@@ -21,6 +21,7 @@ type Config struct {
 type Worker struct {
 	Channel chan *Task
 	Close   chan bool
+	Load    int
 }
 
 type BaseTaskPool struct {
@@ -39,7 +40,7 @@ func (tp *BaseTaskPool) GetWorker() *Worker{
 	min := math.MaxInt32
 	var index int
 	for i := 0; i < len(tp.Workers); i++ {
-		nums := len(tp.Workers[i].Channel)
+		nums := tp.Workers[i].Load
 		if nums < min {
 			min = nums
 			index = i
@@ -67,6 +68,7 @@ func (tp *BaseTaskPool) Start() {
 					if !ok{
 						return
 					}
+					worker.Load++
 					result, err := (*task).Run()
 					if err == nil{
 						(*task).Success(result)

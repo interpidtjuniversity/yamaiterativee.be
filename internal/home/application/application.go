@@ -27,10 +27,35 @@ func GetAppAllBranch(c *context.Context) []byte {
 
 	branches, err := invokerImpl.InvokeQueryAppAllBranchesService(appOwner, appName)
 	if err!=nil {
-		return []byte(fmt.Sprintf("error while invoke QueryAppAllBranchesService, err: %s", err))
+		return []byte(fmt.Sprintf("[]"))
 	}
 	data, _ := json.Marshal(branches)
 	return data
+}
+
+func GetAppAllWhiteBranch(c *context.Context) []byte {
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+
+	branches, err := invokerImpl.InvokeQueryAppAllBranchesService(appOwner, appName)
+	if err!=nil {
+		return []byte(fmt.Sprintf("[]"))
+	}
+	blackBranches := db.GetAppAllBlackBranch(appOwner, appName)
+	var whiteBranches []string
+	for _, ab := range branches {
+		contain := false
+		for _, bb := range blackBranches {
+			if ab==bb{
+				contain = true
+			}
+		}
+		if !contain{
+			whiteBranches = append(whiteBranches, ab)
+		}
+	}
+	date, _ := json.Marshal(whiteBranches)
+	return date
 }
 
 

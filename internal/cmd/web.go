@@ -10,6 +10,7 @@ import (
 	"yama.io/yamaIterativeE/internal/conf"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/form"
+	"yama.io/yamaIterativeE/internal/grpc/service"
 	"yama.io/yamaIterativeE/internal/home/application"
 	"yama.io/yamaIterativeE/internal/home/config"
 	"yama.io/yamaIterativeE/internal/home/iterations"
@@ -72,6 +73,8 @@ func newMacaron() *macaron.Macaron {
 }
 
 func runWeb(c *cli.Context) error {
+	// init grpc
+	go service.Start()
 	// init database
 	route.GlobalInit("")
 	// init global resource
@@ -111,6 +114,7 @@ func runWeb(c *cli.Context) error {
 
 				m.Group("/branches", func() {
 					m.Post("/all", application.GetAppAllBranch)
+					m.Post("/all/white", application.GetAppAllWhiteBranch)
 				})
 			})
 
@@ -124,6 +128,9 @@ func runWeb(c *cli.Context) error {
 						m.Get("", iterations.GetIterationConfig)
 						m.Get("/:env/", iterations.GetIterationConfigByEnv)
 						m.Post("/reset", iterations.ResetIterationConfig)
+					})
+					m.Group("/users", func() {
+						m.Get("", iterations.GetIterationAllUsers)
 					})
 				})
 			})

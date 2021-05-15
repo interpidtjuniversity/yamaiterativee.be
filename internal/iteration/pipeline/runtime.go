@@ -77,13 +77,15 @@ type RuntimePipeline struct {
 	StagesIndex []int                         //changeable
 	StageDAG    [][]int64                     //changeable
 	StageLayout [][]int64
-	Buckets     []*stage.RuntimeStage //changeable
+	Buckets     []*stage.RuntimeStage //changeablewe
 	Status      RuntimePipelineState  //changeable
 	ExecPath    string
 	Success     chan step.Message
 	Failure     chan step.Message
 	//if buckets is build up by BuildRuntimeStage
 	IsBuildUp   bool
+	// pipeline args
+	Args        map[string]interface{}
 }
 
 // before this, insure already have a IterationAction
@@ -122,6 +124,7 @@ func FromStep(se *stage.RuntimeStage, sp *db.Step) *step.RuntimeStep {
 		StageId: se.StageId,
 		PipelineId: se.PipelineId,
 		StageIndex: se.StageIndex,
+		Type: sp.Type,
 		ExecPath: se.ExecPath, LogPath: step.FormatLogPath(), Command: sp.Command, Args: sp.Args, SuccessChannel: se.Success, FailureChannel: se.Failure, State: step.Init}
 	return rs
 }
