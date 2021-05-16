@@ -1,11 +1,7 @@
 package stage
 
 import (
-	"encoding/json"
 	"fmt"
-	"yama.io/yamaIterativeE/internal/context"
-	"yama.io/yamaIterativeE/internal/db"
-	"yama.io/yamaIterativeE/internal/iteration/step"
 )
 
 
@@ -34,19 +30,4 @@ func (ep *Endpoint)FormatId(id int){
 	if ep.Id!="" {
 		ep.Id = fmt.Sprintf(ep.Id, id)
 	}
-}
-
-func IterStageInfo(c *context.Context) ([]byte, error){
-	stageId := c.ParamsInt64(":stageId")
-
-	var infoSteps []step.InfoStep
-	stage,_ := db.GetStageById(stageId)
-	steps,_ := db.BranchQueryStepsByIds(stage.Steps)
-	for i:=0; i<len(steps); i++ {
-		infoStep := step.InfoStep{Index: i, Image: steps[i].Img, Title: steps[i].Name, StepId: steps[i].ID}
-		infoSteps = append(infoSteps, infoStep)
-	}
-
-	data, err := json.Marshal(infoSteps)
-	return data, err
 }

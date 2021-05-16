@@ -64,3 +64,12 @@ func BatchQueryStateExecByActIdAndStageId(actionIds, stageIds []int64) ([]*Stage
 	}
 	return filterResult, nil
 }
+
+func GetStageExecIdByActIdAndStageId(actionId, stageId int64) (int64, error) {
+	stageExec := new(StageExec)
+	exist, err := x.Table("stage_exec").Where(builder.Eq{"act_id":actionId, "stage_id":stageId}).Limit(1).Get(stageExec)
+	if !exist || err != nil {
+		return 0, err
+	}
+	return stageExec.Id, nil
+}

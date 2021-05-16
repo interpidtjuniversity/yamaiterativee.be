@@ -2,33 +2,30 @@ package invokerImpl
 
 import (
 	"context"
-	"google.golang.org/grpc"
-	"log"
 	"time"
 	"yama.io/yamaIterativeE/internal/grpc/invoke"
 )
 
-func InvokeRegisterMergeRequestService() *invoke.RegisterMRResponse {
-	//连接到gRPC服务端
-	conn, err := grpc.Dial("localhost:8000", grpc.WithInsecure())
-	if err != nil {
-		log.Fatalf("did not connect: %v", err)
-	}
-	defer conn.Close()
-
-	//建立客户端
-	c := invoke.NewYaMaHubBranchServiceClient(conn)
-
+func InvokeRegisterMergeRequestService(ownerName, repoName, sourceBranch, targetBranch string,
+	actionId, stageId, stepId int64, reviewers []string) (int64, string) {
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
 	_, cancel := context.WithTimeout(context.Background(), time.Second)
 	defer cancel()
 
-	// 调用方法
-	r, err := c.RegisterMergeRequest(context.Background(), &invoke.RegisterMRRequest{OwnerName: "interpidtjuniversity", RepoName: "init", SourceBranch: "dev_0311", TargetBranch: "master"})
-	if err != nil {
-		log.Fatalf("couldn not greet: %v", err)
-		return nil
-	}
-	return r
+	response, _ := client.RegisterMergeRequest(context.Background(), &invoke.RegisterMRRequest{
+		OwnerName: ownerName,
+		RepoName: repoName,
+		SourceBranch: sourceBranch,
+		TargetBranch: targetBranch,
+		ActionId: actionId,
+		StagedId: stageId,
+		StepId: stepId,
+		Reviewers: reviewers,
+	})
+
+	return response.MRId, response.ShowDiffUri
 }
 
 func InvokeQueryRepoBranchCommitService(ownerName, repoName, branchName string) (string, string){

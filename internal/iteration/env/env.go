@@ -50,6 +50,9 @@ func IterEnvInfo (c *context.Context) []byte {
 	iteration, _ := db.GetIterationById(iterationId)
 	actGroup,_ := db.GetIterationActGroupByIterationIdAndEnv(iterationId, envType)
 
+	if actGroup == nil{
+		return nil
+	}
 	latestCommit, latestCommitLink := invokerImpl.InvokeQueryRepoBranchCommitService(iteration.OwnerName, iteration.RepoName, actGroup.TargetBranch)
 
 	var pr int

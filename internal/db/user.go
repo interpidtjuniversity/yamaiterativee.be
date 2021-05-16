@@ -32,3 +32,12 @@ func BranchQueryUserByName(names []string) ([]*User, error){
 	err := x.Table("user").Where(builder.In("name", names)).Find(&users)
 	return users, err
 }
+
+func GetUserAvatarByUserName(name string) (string, error) {
+	user := new(User)
+	exist, err := x.Table("user").Cols("avatar").Where(builder.Eq{"name":name}).Limit(1).Get(user)
+	if !exist && err != nil {
+		return "", err
+	}
+	return user.Avatar, nil
+}

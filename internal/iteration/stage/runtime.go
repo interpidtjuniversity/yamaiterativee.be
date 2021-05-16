@@ -29,6 +29,9 @@ func (rss RuntimeStageState) FromString(s string) RuntimeStageState {
 		return Failure
 	case "Finish":
 		return Finish
+	case "Canceled":
+		return Canceled
+
 	default:
 		return Unknown
 	}
@@ -46,6 +49,8 @@ func (rss RuntimeStageState)ToString() string {
 		return "Finish"
 	case Failure:
 		return "Failure"
+	case Canceled:
+		return "Canceled"
 	default:
 		return "Unknown"
 	}
@@ -81,6 +86,10 @@ type RuntimeStage struct {
 	Success   chan step.Message
 	Failure   chan step.Message
 	State     RuntimeStageState
+
+	NeedUpdate       bool
+
+	Env       *map[string]interface{}
 }
 
 

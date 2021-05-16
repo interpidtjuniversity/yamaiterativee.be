@@ -9,12 +9,13 @@ import (
 type IterationState int
 
 const (
-	INIT_STATE = -1
-	DEV_STATE IterationState = iota
-	ITG_STATE
-	PRE_STATE
-	GARY_STATE
-	PROD_STATE
+	INIT_STATE 		IterationState = -1
+	DEV_STATE 		IterationState = 0
+	ITG_STATE 		IterationState = 1
+	PRE_STATE 		IterationState = 2
+	GARY_STATE 		IterationState = 3
+	PROD_STATE 		IterationState = 4
+	UNKNOWN_STATE 	IterationState = 5
 )
 
 func (is IterationState) ToString() string {
@@ -33,6 +34,25 @@ func (is IterationState) ToString() string {
 		return "prod"
 	default:
 		return "unknown"
+	}
+}
+
+func (is IterationState)FromString(env string) IterationState {
+	switch env {
+	case "init":
+		return INIT_STATE
+	case "dev":
+		return DEV_STATE
+	case "itg":
+		return ITG_STATE
+	case "pre":
+		return PRE_STATE
+	case "gary":
+		return GARY_STATE
+	case "prod":
+		return PROD_STATE
+	default:
+		return UNKNOWN_STATE
 	}
 }
 
@@ -175,6 +195,19 @@ func GetIterationAllAdmins(iterId int64) (*Iteration, error) {
 		return nil, err
 	}
 	return iteration, err
+}
+
+func UpdateIterationState(iterId int64, s string) error {
+	now := new(Iteration)
+	state := UNKNOWN_STATE.FromString(s)
+	exist, err := x.Table("iteration").Cols("iter_state").Where(builder.Eq{"id":iterId}).Get(now)
+	if exist {
+		if now.IterState < state {
+			now.IterState = state
+			_, err = x.Table("iteration").Cols("iter_state").Where(builder.Eq{"id":iterId}).Update(now)
+		}
+	}
+	return err
 }
 
 type ErrIterationNotExist struct {

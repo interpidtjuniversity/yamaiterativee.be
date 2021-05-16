@@ -10,11 +10,18 @@ type StepExec struct {
 	Passed      bool    `xorm:"is_passed"`
 	ExecPath    string  `xorm:"exec_path"`
 	State       string  `xorm:"state"`
+	Link        string  `xorm:"link"`
 }
 
 func InsertStepExec(exec *StepExec) (int64, error){
 	id, err := x.Insert(exec)
 	return id, err
+}
+
+func UpdateStepExecState(id int64, state string) error {
+	stepExec := &StepExec{State: state}
+	_ ,err := x.Table("step_exec").Cols("state").Where(builder.Eq{"id":id}).Update(stepExec)
+	return err
 }
 
 func PassStepExec(id int64) error{

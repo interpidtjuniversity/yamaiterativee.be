@@ -22,6 +22,7 @@ const (
 	Finish
 	Canceled
 	Error
+	WillError
 	Unknown
 )
 func (rps RuntimePipelineState)ToString() string {
@@ -85,12 +86,12 @@ type RuntimePipeline struct {
 	//if buckets is build up by BuildRuntimeStage
 	IsBuildUp   bool
 	// pipeline args
-	Args        map[string]interface{}
+	Env *map[string]interface{}
 }
 
 // before this, insure already have a IterationAction
-func FromIterationAction(action db.IterationAction, pipeline db.Pipeline) *RuntimePipeline {
-	r := &RuntimePipeline{ID: action.Id, PipeLineId: action.PipeLineId, StageDAG: pipeline.StageDAG, StageLayout: pipeline.StageLayout, NodeNum: len(pipeline.StageDAG), ExecPath: action.ExecPath}
+func FromIterationAction(action db.IterationAction, pipeline db.Pipeline, env *map[string]interface{}) *RuntimePipeline {
+	r := &RuntimePipeline{ID: action.Id, PipeLineId: action.PipeLineId, StageDAG: pipeline.StageDAG, StageLayout: pipeline.StageLayout, NodeNum: len(pipeline.StageDAG), ExecPath: action.ExecPath, Env: env}
 	//r.Buckets = make([]*stage.RuntimeStage, GetDAGMaxParallel(pipeline.StageDAG))
 	r.Buckets = make([]*stage.RuntimeStage, len(pipeline.StageDAG))
 	r.Success = e.Success
@@ -106,7 +107,7 @@ func FromIterationAction(action db.IterationAction, pipeline db.Pipeline) *Runti
 }
 
 func FromStage(pipeline *RuntimePipeline, s *db.Stage, stageIndex int) *stage.RuntimeStage {
-	rs := &stage.RuntimeStage{IterationActionId: pipeline.ID, StageId: s.ID, StageIndex: stageIndex, PipelineId: pipeline.PipeLineId, TaskNum: len(s.Steps), Success: pipeline.Success, Failure: pipeline.Failure,ExecPath: pipeline.ExecPath, State: stage.Init}
+	rs := &stage.RuntimeStage{IterationActionId: pipeline.ID, StageId: s.ID, StageIndex: stageIndex, PipelineId: pipeline.PipeLineId, TaskNum: len(s.Steps), Success: pipeline.Success, Failure: pipeline.Failure,ExecPath: pipeline.ExecPath, State: stage.Init, Env: pipeline.Env}
 	steps, _ := db.BranchQueryStepsByIds(s.Steps)
 	var runtimeSteps []*step.RuntimeStep
 	for _,s := range steps {
@@ -125,7 +126,9 @@ func FromStep(se *stage.RuntimeStage, sp *db.Step) *step.RuntimeStep {
 		PipelineId: se.PipelineId,
 		StageIndex: se.StageIndex,
 		Type: sp.Type,
-		ExecPath: se.ExecPath, LogPath: step.FormatLogPath(), Command: sp.Command, Args: sp.Args, SuccessChannel: se.Success, FailureChannel: se.Failure, State: step.Init}
+		ExecPath: se.ExecPath, LogPath: step.FormatLogPath(), Command: sp.Command, Args: sp.Args, SuccessChannel: se.Success, FailureChannel: se.Failure, State: step.Init,
+		Env: se.Env,
+	}
 	return rs
 }
 
@@ -248,48 +251,45 @@ func (e *Executor) Reg(bean interface{}) error  {
 	return RegError{Args: map[string]interface{}{"bean": bean}}
 }
 
-func (e *Executor) UnReg(bean interface{}) error {
-	action,ok := bean.(*RuntimePipeline)
-	if ok{
-		var p *RuntimePipeline
-		var element *list.Element
-		for i:=e.actions.Front(); i!=nil; i=i.Next() {
-			element=i
-			p,_ = (i.Value).(*RuntimePipeline)
-			if p.ID == action.ID {
-				switch p.Status {
-				case Init:
-					p.Status=Canceled
-					break
-				case Running:
-					p.Status=Canceled
-					break
-				default:
-					return UnRegError{Args: map[string]interface{}{"bean": bean}}
+func (e *Executor) UnReg(actionId int64) error {
+	var p *RuntimePipeline
+	var element *list.Element
+	for i:=e.actions.Front(); i!=nil; i=i.Next() {
+		if (i.Value).(*RuntimePipeline).ID == actionId {
+			element = i
+			p = (i.Value).(*RuntimePipeline)
+			break
+		}
+	}
+	if p == nil {
+		return UnRegError{Args: map[string]interface{}{"actionId": actionId}}
+	}
+
+	// remove
+	e.Lock.Lock()
+	p.Status = Canceled
+	for i:=0; i < len(p.Buckets); i++ {
+		if p.Buckets[i].State != stage.Finish && p.Buckets[i].State != stage.Failure {
+			p.Buckets[i].State = stage.Canceled
+			p.Buckets[i].NeedUpdate = true
+		}
+		for j:=0; j < len(p.Buckets[i].Steps); j++ {
+			if p.Buckets[i].Steps[j].State != step.Finish && p.Buckets[i].Steps[j].State != step.Failure {
+				p.Buckets[i].Steps[j].State = step.Canceled
+				p.Buckets[i].Steps[j].NeedUpdate = true
+				if p.Buckets[i].Steps[j].Type == "callBack" {
+					p.Buckets[i].Steps[j].Canceled = true
 				}
-				break
 			}
 		}
-		// handle the runtime
-		/**
-		   1. cancel the runtime
-		   2. git commit refresh the runtime
-		   3. runtime successful executed
-		*/
-		if p == nil {
-			return UnRegError{Args: map[string]interface{}{"bean": bean}}
-		}
-
-		// remove
-		e.Lock.Lock()
-		e.actions.Remove(element)
-		e.Lock.Unlock()
-		// handle
-		err := Handle(p)
-
-		return err
 	}
-	return RegError{Args: map[string]interface{}{"bean": bean}}
+	e.actions.Remove(element)
+	err := Handle(p)
+	e.Lock.Unlock()
+	// handle
+
+	return err
+
 }
 
 func (e *Executor) Start() {
@@ -344,6 +344,7 @@ func (e *Executor) Start() {
 							if stageRuntime.TaskNum == 0 {
 								// update runtimeStage state
 								pipeline.Buckets[message.StageIndex].State = stage.Finish
+								pipeline.Buckets[message.StageIndex].NeedUpdate = true
 								// delete node index
 								for k,v := range pipeline.StagesIndex {
 									if v == message.StageIndex {
@@ -359,6 +360,26 @@ func (e *Executor) Start() {
 								if len(pipeline.StagesIndex) == 0 {
 									pipeline.Status = Finish
 									continue
+								} else {
+									//2. a Success will cause WillError -> Error
+									m,_,_ := InDegree(pipeline.StageDAG)
+									var inDegrees []byte
+									var failures []byte
+									for _,v := range pipeline.StagesIndex {
+										if m[v] == 0 {
+											inDegrees = append(inDegrees, byte(v))
+										}
+									}
+									for i:=0; i<len(pipeline.Buckets); i++ {
+										if pipeline.Buckets[i].State == stage.Failure {
+											failures = append(failures, byte(pipeline.Buckets[i].StageIndex))
+										}
+									}
+									if bytes.Equal(inDegrees, failures) {
+										pipeline.Status = Error
+										Handle(pipeline)
+										continue
+									}
 								}
 								pipeline.BuildRuntimeStage()
 								e.schedule(pipeline)
@@ -389,6 +410,7 @@ func (e *Executor) Start() {
 							stageRuntime := pipeline.Buckets[message.StageIndex]
 							stageRuntime.Lock.Lock()
 							stageRuntime.State = stage.Failure
+							stageRuntime.NeedUpdate = true
 							stageRuntime.Lock.Unlock()
 							//2. judge if RuntimePipeline needs failure
 							m,_,_ := InDegree(pipeline.StageDAG)
@@ -406,7 +428,10 @@ func (e *Executor) Start() {
 							}
 							if bytes.Equal(inDegrees, failures) {
 								pipeline.Status = Error
+							} else {
+								pipeline.Status = WillError
 							}
+							Handle(pipeline)
 							//3. TODO
 
 						}
@@ -438,6 +463,7 @@ func (e *Executor) schedule(rp *RuntimePipeline) {
 			_, _ = db.InsertStageExec(&stageExec)
 			rp.Buckets[i].Id = stageExec.Id
 			rp.Buckets[i].State = stage.Running
+			rp.Buckets[i].NeedUpdate = true
 			for _,s := range rp.Buckets[i].Steps {
 				s.StageExecId = stageExec.Id
 				e.sendTask(s)
@@ -458,8 +484,14 @@ func (e *Executor) sendTask(s *step.RuntimeStep) {
 func Handle(rp *RuntimePipeline) error{
 	db.UpdateIterationAction(rp.ID, rp.Status.ToString())
 	for i := 0; i < len(rp.Buckets); i++ {
-		if rp.Buckets[i].State.CanUpdate() {
+		if rp.Buckets[i].State.CanUpdate() && rp.Buckets[i].NeedUpdate {
 			db.UpdateStageExecState(rp.Buckets[i].Id, rp.Buckets[i].State.ToString())
+			rp.Buckets[i].NeedUpdate = false
+		}
+		for j:=0; j < len(rp.Buckets[i].Steps); j++ {
+			if rp.Buckets[i].Steps[j].NeedUpdate{
+				db.UpdateStepExecState(rp.Buckets[i].Steps[j].Id, rp.Buckets[i].Steps[j].State.ToString())
+			}
 		}
 	}
 	return nil

@@ -18,7 +18,6 @@ import (
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
 	"yama.io/yamaIterativeE/internal/iteration/pipeline"
-	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/registry/consul"
 	"yama.io/yamaIterativeE/internal/resource"
 	"yama.io/yamaIterativeE/internal/route"
@@ -119,6 +118,9 @@ func runWeb(c *cli.Context) error {
 			})
 
 			m.Group("/iterations", func() {
+				m.Group("/createmr", func() {
+					m.Post("/:pipelineId", pipeline.StartPipelineInternal)
+				})
 				m.Group("/user/:username", func() {
 					m.Get("/all", iterations.GetUserAllIterations)
 				})
@@ -170,9 +172,10 @@ func runWeb(c *cli.Context) error {
 						m.Get("/:envType", env.IterActionInfo)
 					})
 					m.Group("/:actionId", func() {
+						m.Get("/cancel", pipeline.CancelPipeline)
 						m.Get("/state", pipeline.IterActionState)
 						m.Group("/stage", func() {
-							m.Get("/:stageId", stage.IterStageInfo)
+							m.Get("/:stageId", pipeline.IterStageInfo)
 							m.Get("/:stageId/state", pipeline.IterStageState)
 							m.Group("/:stageId/step", func() {
 								m.Get("/:stepId/state", pipeline.IterStepState)

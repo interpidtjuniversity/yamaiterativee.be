@@ -2,7 +2,6 @@ package step
 
 import (
 	"context"
-	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -16,6 +15,7 @@ const (
 	Finish
 	Failure
 	Unknown
+	Canceled
 )
 
 func (r RuntimeStepState) ToString() string {
@@ -28,6 +28,8 @@ func (r RuntimeStepState) ToString() string {
 		return "Finish"
 	case Failure:
 		return "Failure"
+	case Canceled:
+		return "Canceled"
 	default:
 		return "Unknown"
 	}
@@ -43,6 +45,8 @@ func (r RuntimeStepState) FromString(s string) RuntimeStepState {
 		return Finish
 	case "Failure":
 		return Failure
+	case "Canceled":
+		return Canceled
 	default:
 		return Unknown
 	}
@@ -69,6 +73,11 @@ type RuntimeStep struct {
 	State          RuntimeStepState
 	Cond           bool
 	Type           string
+
+	NeedUpdate     bool
+	Canceled       bool
+
+	Env            *map[string]interface{}
 }
 
 // message when a step finish
@@ -86,18 +95,23 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 	// write db
 	t.State = Running
 	step := db.StepExec{StepId: t.StepId, StageExecId: t.StageExecId, LogPath: t.LogPath, ExecPath: t.ExecPath, State: Running.ToString()}
+	switch t.StepId {
+	case 11:
+		step.Link = (*(t.Env))["mergeRequestCodeReviewUrl"].(string)
+		break
+	}
 	_, _ = db.InsertStepExec(&step)
-	// sleep to 10
-	time.Sleep(time.Duration(10)*time.Second)
+	t.Id = step.ID
 	// exec
 	if t.Type == "callBack" {
 		// 11. code review
-		for !t.Cond {
+		for !t.Cond && !t.Canceled {
 			time.Sleep(time.Duration(5) * time.Second)
 		}
 	} else if t.Type == "command" {
 		// other exec command
-		t.Id = step.ID
+		// sleep to 10
+		time.Sleep(time.Duration(5)*time.Second)
 		// exec
 		ctx := context.Background()
 		commend := exec.CommandContext(ctx, t.Command, t.Args...)
@@ -130,7 +144,6 @@ func (t *RuntimeStep) Success(result interface{}) {
 }
 
 func (t *RuntimeStep) Failure() {
-	fmt.Print("failure")
 	t.State = Failure
 	t.FailureChannel <- Message{
 		StageIndex: t.StageIndex,
@@ -150,6 +163,6 @@ func (t *RuntimeStep) Cancel() {
 }
 
 func (t *RuntimeStep) IsCancel() bool {
-	return false
+	return t.Canceled
 }
 

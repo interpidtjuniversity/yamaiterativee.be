@@ -3,14 +3,19 @@ package pipeline
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"strconv"
 	"strings"
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/iteration/step"
 	"yama.io/yamaIterativeE/internal/util"
 )
+
+var PIPELINE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s"
+var STAGE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s/%s"
 
 var EndpointType = []stage.Endpoint{
 	{Id: "%d_left", Orientation: []int{-1, 0}, Pos: []float64{0, 0.5}},
@@ -204,30 +209,57 @@ func StartPipeline(c *context.Context) ([]byte, error) {
 
 	pipeline,_ := db.GetPipelineById(pipelineId)
 
-	runtimePipeline := FromIterationAction(pipeExec, *pipeline)
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{})
 	err := e.Reg(runtimePipeline)
 
 	return nil,err
 }
 
 func StartPipelineInternal(c *context.Context) ([]byte, error) {
-	//pipelineId := c.ParamsInt64(":pipelineId")
-	//actorName := c.Query("actorName")
-	//iterId := c.Query("iterId")
-	//iterTargetBranch := c.Query("iterTargetBranch")
-	//iterDevelopBranch := c.Query("iterDevelopBranch")
-	//mrCodeReviews := c.Query("mrCodeReviews")
-	//env := c.Query("env")
-	//actionInfo := c.Query("mrInfo")
-	//
-	//// generate by branches
-	//actionGroupInfo := c.Query("actionGroupInfo")
-	//// query by actorName
-	//avatarSrc := c.Query("avatarSrc")
-	//// query by iterId and env
-	//envGroup := c.QueryInt64("envGroup")
+	// form data
+	pipelineId := c.ParamsInt64(":pipelineId")
+	actorName := c.Query("actorName")
+	iterId := c.QueryInt64("iterId")
+	iterTargetBranch := c.Query("iterTargetBranch")
+	iterDevelopBranch := c.Query("iterDevelopBranch")
+	var mrCodeReviews []string
+	json.Unmarshal([]byte(c.Query("mrCodeReviews")), &mrCodeReviews)
+	env := c.Query("env")
+	actionInfo := c.Query("mrInfo")
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+
+	// auto data
+	actionGroupInfo := fmt.Sprintf("%s -> %s", iterDevelopBranch, iterTargetBranch)
+	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
+	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
+	db.UpdateIterationState(iterId, env)
+
+	// reg pipeline
+	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
+		ActionGroupInfo: actionGroupInfo, ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExecPath: fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(10,"")),
+	}
+	// prepare workspace
+	os.MkdirAll(pipeExec.ExecPath, os.ModePerm)
+	_, _ = db.InsertIterationAction(&pipeExec)
+	pipeline,_ := db.GetPipelineById(pipelineId)
+
+	// reg merge request code review
+	_, mergeRequestCodeReviewUrl := invokerImpl.InvokeRegisterMergeRequestService(appOwner, appName, iterDevelopBranch, iterTargetBranch,
+		pipeExec.Id, 1, 11, mrCodeReviews)
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
+		"mergeRequestCodeReviewUrl":mergeRequestCodeReviewUrl,
+		"stageExecPath": pipeExec.ExecPath+appName,
+	})
+	_ = e.Reg(runtimePipeline)
 
 	return nil,nil
+}
+
+func CancelPipeline(c *context.Context) []byte{
+	actionId := c.ParamsInt64(":actionId")
+	e.UnReg(actionId)
+	return []byte("success")
 }
 
 // callBack for other system
@@ -396,7 +428,7 @@ func IterStageState(c *context.Context) ([]byte, error) {
 		}
 	}
 
-	stageState := stage.Unknown
+	stageState := stage.Canceled
 	if action != nil {
 		for i := 0; i < len(action.Buckets); i++ {
 			if action.Buckets[i].StageId == stageId {
@@ -455,6 +487,28 @@ func IterStepState(c *context.Context) ([]byte, error) {
 		}
 	}
 	data, err := json.Marshal(runtimeStepState.ToString())
+	return data, err
+}
+
+
+func IterStageInfo(c *context.Context) ([]byte, error){
+	actionId := c.ParamsInt64(":actionId")
+	stageId := c.ParamsInt64(":stageId")
+
+	var infoSteps []step.InfoStep
+	stage,_ := db.GetStageById(stageId)
+	steps,_ := db.BranchQueryStepsByIds(stage.Steps)
+	stageExec, _ := db.GetStageExecIdByActIdAndStageId(actionId, stageId)
+	for i:=0; i<len(steps); i++ {
+		infoStep := step.InfoStep{Index: i, Image: steps[i].Img, Title: steps[i].Name, StepId: steps[i].ID}
+		stepExec,_ := db.GetStepExecByStageExecIdAndStepId(stageExec, steps[i].ID)
+		if stepExec != nil {
+			infoStep.Link = stepExec.Link
+		}
+		infoSteps = append(infoSteps, infoStep)
+	}
+
+	data, err := json.Marshal(infoSteps)
 	return data, err
 }
 

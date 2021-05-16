@@ -17,6 +17,7 @@ type InfoStep struct {
 	Title      string `json:"title"`
 	Image      string `json:"image"`
 	Index      int    `json:"index"`
+	Link       string `json:"link"`
 }
 
 func init() {
