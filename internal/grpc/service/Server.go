@@ -2,6 +2,7 @@ package service
 
 import (
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/reflection"
 	"log"
 	"net"
 	"yama.io/yamaIterativeE/internal/grpc/service/serviceImpl"
@@ -15,6 +16,7 @@ func Start() {
 
 	//建立 gPRC 服务器，并注册服务
 	s := grpc.NewServer()
+	reflection.Register(s)
 	// start all grpc service
 	serviceImpl.RegisterYaMaPipeLineServiceServer(s, &serviceImpl.PileLineService{})
 

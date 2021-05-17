@@ -94,3 +94,22 @@ func InvokeQueryAppAllBranchesService(ownerName, repoName string) ([]string, err
 	}
 	return nil, err
 }
+
+func InvokeMerge2BranchService(userName, repoName, source, target string) (bool, error){
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+
+	response, err := client.Merge2Branch(context.Background(), &invoke.Merge2BranchRequest{
+		UserName: userName,
+		Repository: repoName,
+		SourceBranch: source,
+		TargetBranch: target,
+	})
+	if response != nil {
+		return response.Success, err
+	}
+	return false, err
+}
