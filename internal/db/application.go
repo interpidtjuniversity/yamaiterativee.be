@@ -79,6 +79,15 @@ func ApplicationIsExist(owner, app string) bool {
 	return exist
 }
 
+func GetApplicationRepoURLByOwnerAndRepo(owner, app string) string{
+	application := new(Application)
+	exist, err := x.Table("application").Cols("repo_url").Where(builder.Eq{"app_name": app, "owner":owner}).Limit(1).Get(application)
+	if err!=nil || !exist {
+		return ""
+	}
+	return application.RepoUrl
+}
+
 func GetApplicationTypeByOwnerAndRepo(owner, app string) string {
 	application := new(Application)
 	exist, err := x.Table("application").Cols("app_image").Where(builder.Eq{"app_name": app}.And(builder.Eq{"owner":owner})).Limit(1).Get(application)

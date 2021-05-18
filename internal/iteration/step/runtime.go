@@ -114,6 +114,7 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		time.Sleep(time.Duration(5)*time.Second)
 		// exec
 		ctx := context.Background()
+		t.transformArgs(t.Env)
 		commend := exec.CommandContext(ctx, t.Command, t.Args...)
 		commend.Dir = t.ExecPath
 		log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
@@ -166,3 +167,9 @@ func (t *RuntimeStep) IsCancel() bool {
 	return t.Canceled
 }
 
+
+func (t *RuntimeStep)transformArgs(env *map[string]interface{}) {
+	for i:=0; i < len(t.Args); i++ {
+		t.Args[i] = (*env)[t.Args[i]].(string)
+	}
+}

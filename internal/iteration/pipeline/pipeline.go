@@ -16,6 +16,7 @@ import (
 
 var PIPELINE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s"
 var STAGE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s/%s"
+var MERGE_ARG = "'{\"appOwner\":\"%s\",\"appName\":\"%s\"}'"
 
 var EndpointType = []stage.Endpoint{
 	{Id: "%d_left", Orientation: []int{-1, 0}, Pos: []float64{0, 0.5}},
@@ -234,6 +235,7 @@ func StartPipelineInternal(c *context.Context) ([]byte, error) {
 	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
 	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
 	db.UpdateIterationState(iterId, env)
+	repoURL := db.GetApplicationRepoURLByOwnerAndRepo(appOwner, appName)
 
 	// reg pipeline
 	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
@@ -249,7 +251,16 @@ func StartPipelineInternal(c *context.Context) ([]byte, error) {
 		pipeExec.Id, 1, 11, mrCodeReviews)
 	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
 		"mergeRequestCodeReviewUrl":mergeRequestCodeReviewUrl,
-		"stageExecPath": pipeExec.ExecPath+appName,
+		"runPath": pipeExec.ExecPath+appName,
+		"sourceBranch":iterDevelopBranch,
+		"targetBranch":iterTargetBranch,
+		"appName":appName,
+		"repoURL":repoURL,
+		"appPath":appName,
+		"pmdScanPath":appName+"/src",
+		"mergeArg":fmt.Sprintf(MERGE_ARG, appOwner, appName),
+		"yamaHubAddr":"127.0.0.1:8000",
+		"mergeService":"proto.YaMaHubBranchService.QueryAppAllBranch",
 	})
 	_ = e.Reg(runtimePipeline)
 
@@ -691,6 +702,10 @@ var findEndpointPosition = func(sX, sY, eX, eY int) (s, e EndpointPosition) {
 	}
 
 	return s,e
+}
+
+func buildPipelineEnv() map[string]interface{}{
+	return nil
 }
 
 func concatInt64Slice(array []int64) string{

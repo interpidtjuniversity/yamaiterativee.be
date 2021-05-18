@@ -38,7 +38,7 @@ func TestInvokeQueryAppAllBranchesService(t *testing.T) {
 }
 
 func TestInvokeMerge2BranchService(t *testing.T) {
-	response, err := InvokeMerge2BranchService("interpidtjuniversity","miniselfop","5defe44db1_2021_5_10_dev","5defe44db1_2021_5_10")
+	response, err := InvokeMerge2BranchService("interpidtjuniversity","miniselfop","5defe44db1_2021_5_10_dev","5defe44db1_2021_5_10","test")
 	assert.Nil(t, err)
 	assert.True(t, response)
 }

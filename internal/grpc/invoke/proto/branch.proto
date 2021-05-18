@@ -30,6 +30,7 @@ message Merge2BranchRequest{
   string repository = 3;
   string sourceBranch = 4;
   string targetBranch = 5;
+  string mergeInfo = 6;
 }
 message Merge2BranchResponse{
   bool success = 1;
