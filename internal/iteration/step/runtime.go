@@ -2,6 +2,7 @@ package step
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/exec"
 	"time"
@@ -112,9 +113,11 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		// other exec command
 		// sleep to 10
 		time.Sleep(time.Duration(5)*time.Second)
+		basePath, _ := os.Getwd()
 		// exec
 		ctx := context.Background()
 		t.transformArgs(t.Env)
+		t.Command = fmt.Sprintf("%s%s",basePath,t.Command)
 		commend := exec.CommandContext(ctx, t.Command, t.Args...)
 		commend.Dir = t.ExecPath
 		log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
@@ -170,6 +173,7 @@ func (t *RuntimeStep) IsCancel() bool {
 
 func (t *RuntimeStep)transformArgs(env *map[string]interface{}) {
 	for i:=0; i < len(t.Args); i++ {
-		t.Args[i] = (*env)[t.Args[i]].(string)
+		key := (*env)[t.Args[i]]
+		t.Args[i] = key.(string)
 	}
 }

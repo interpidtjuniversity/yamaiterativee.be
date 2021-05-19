@@ -410,7 +410,8 @@ type DatabaseOpts struct {
 }
 
 // Database settings
-var Database = DatabaseOpts{DbType: "sqlite3", Type: "sqlite3", Path: "/root/yamaIterativeE/yamaIterativeE-database/yamaIterativeE.db"}
+var Database = DatabaseOpts{DbType: "sqlite3", Type: "sqlite3", Path: "yamaIterativeE.db"}
+//var Database = DatabaseOpts{DbType: "sqlite3", Type: "sqlite3", Path: "/root/yamaIterativeE/yamaIterativeE-database/yamaIterativeE.db"}
 
 type LFSOpts struct {
 	Storage     string

@@ -16,7 +16,7 @@ import (
 
 var PIPELINE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s"
 var STAGE_EXEC_PATH = "/root/yamaIterativeE/yamaIterativeE-pipeline-exec/%s/%s"
-var MERGE_ARG = "'{\"appOwner\":\"%s\",\"appName\":\"%s\"}'"
+var PMD_SCAN_PATH = "%s/%s"
 
 var EndpointType = []stage.Endpoint{
 	{Id: "%d_left", Orientation: []int{-1, 0}, Pos: []float64{0, 0.5}},
@@ -249,18 +249,21 @@ func StartPipelineInternal(c *context.Context) ([]byte, error) {
 	// reg merge request code review
 	_, mergeRequestCodeReviewUrl := invokerImpl.InvokeRegisterMergeRequestService(appOwner, appName, iterDevelopBranch, iterTargetBranch,
 		pipeExec.Id, 1, 11, mrCodeReviews)
+	mergeReq := MergeRequest{UserName: appOwner, Repository: appName, SourceBranch: iterDevelopBranch, TargetBranch: iterTargetBranch, MergeInfo: actionInfo}
+	mergeReqData, _ := json.Marshal(mergeReq)
 	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
 		"mergeRequestCodeReviewUrl":mergeRequestCodeReviewUrl,
-		"runPath": pipeExec.ExecPath+appName,
 		"sourceBranch":iterDevelopBranch,
 		"targetBranch":iterTargetBranch,
+		"appOwner":appOwner,
 		"appName":appName,
 		"repoURL":repoURL,
 		"appPath":appName,
-		"pmdScanPath":appName+"/src",
-		"mergeArg":fmt.Sprintf(MERGE_ARG, appOwner, appName),
-		"yamaHubAddr":"127.0.0.1:8000",
-		"mergeService":"proto.YaMaHubBranchService.QueryAppAllBranch",
+		"pmdScanPath":fmt.Sprintf(PMD_SCAN_PATH, appName, "src"),
+		"mergeArg":fmt.Sprintf("'%s'",string(mergeReqData)),
+		"mergeInfo":actionInfo,
+		"yamaHubAddr":"localhost:8000",
+		"mergeService":"proto.YaMaHubBranchService/Merge2Branch",
 	})
 	_ = e.Reg(runtimePipeline)
 
@@ -706,6 +709,15 @@ var findEndpointPosition = func(sX, sY, eX, eY int) (s, e EndpointPosition) {
 
 func buildPipelineEnv() map[string]interface{}{
 	return nil
+}
+
+type MergeRequest struct {
+	UserId       int64  `json:"userId"`
+	UserName     string `json:"userName"`
+	Repository   string `json:"repository"`
+	SourceBranch string `json:"sourceBranch"`
+	TargetBranch string `json:"targetBranch"`
+	MergeInfo    string `json:"mergeInfo"`
 }
 
 func concatInt64Slice(array []int64) string{

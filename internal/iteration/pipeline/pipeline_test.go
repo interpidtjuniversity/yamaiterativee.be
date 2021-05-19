@@ -32,6 +32,12 @@ func Test_PipelineParse(t *testing.T) {
 	fmt.Print(json.Marshal(endpoints))
 }
 
+func Test_abc(t *testing.T) {
+	mergeReq := MergeRequest{UserName: "appOwner", Repository: "appName", SourceBranch: "iterDevelopBranch", TargetBranch: "iterTargetBranch", MergeInfo: "actionInfo"}
+	mergeReqData, _ := json.Marshal(mergeReq)
+	fmt.Print(string(mergeReqData))
+}
+
 
 func Test_StageRuntimeStateFromString(t *testing.T) {
 	var srs stage.RuntimeStageState
