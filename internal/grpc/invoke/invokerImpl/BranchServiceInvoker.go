@@ -7,7 +7,8 @@ import (
 )
 
 func InvokeRegisterMergeRequestService(ownerName, repoName, sourceBranch, targetBranch string,
-	actionId, stageId, stepId int64, reviewers []string) (int64, string) {
+	actionId, stageId, stepId int64, reviewers []string, pipelineId int64, actorName string, iterationId int64,
+	env, actionInfo string) (int64, string) {
 	conn := invoke.GetConnection()
 	defer invoke.Return(conn)
 	client := invoke.NewYaMaHubBranchServiceClient(conn)
@@ -23,6 +24,11 @@ func InvokeRegisterMergeRequestService(ownerName, repoName, sourceBranch, target
 		StagedId: stageId,
 		StepId: stepId,
 		Reviewers: reviewers,
+		PipelineId: pipelineId,
+		IterationId: iterationId,
+		ActorName: actorName,
+		Env: env,
+		ActionInfo: actionInfo,
 	})
 
 	return response.MRId, response.ShowDiffUri
@@ -108,6 +114,21 @@ func InvokeMerge2BranchService(userName, repoName, source, target, mergeInfo str
 		SourceBranch: source,
 		TargetBranch: target,
 		MergeInfo: mergeInfo,
+	})
+	if response != nil {
+		return response.Success, err
+	}
+	return false, err
+}
+
+func InvokeFinishMergeRequestPipelineService(actionId int64) (bool, error){
+	conn := invoke.GetConnection()
+	defer invoke.Return(conn)
+	client := invoke.NewYaMaHubBranchServiceClient(conn)
+	_, cancel := context.WithTimeout(context.Background(), time.Second)
+	defer cancel()
+	response, err := client.FinishMergeRequestPipeline(context.Background(), &invoke.FinishMergeRequestPipelineRequest{
+		ActionId: actionId,
 	})
 	if response != nil {
 		return response.Success, err

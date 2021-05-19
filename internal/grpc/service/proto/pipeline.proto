@@ -22,7 +22,25 @@ message PassMergeRequestCodeReviewResponse{
   bool success = 1;
 }
 
+message RestartYaMaPipeLineRequest{
+  int64 pipelineId = 1;
+  int64 iterationId = 2;
+  string actorName = 3;
+  string sourceBranch = 4;
+  string targetBranch = 5;
+  repeated string mrCodeReviews = 6;
+  string env = 7;
+  string mrInfo = 8;
+  string appOwner = 9;
+  string appName = 10;
+  int64 actionId = 11;
+}
+message RestartYaMaPipeLineResponse{
+  bool success = 1;
+}
+
 service YaMaPipeLineService{
   rpc StartYaMaPipeLine(StartYaMaPipeLineRequest) returns (StartYaMaPipeLineResponse) {}
   rpc PassMergeRequestCodeReview(PassMergeRequestCodeReviewRequest) returns (PassMergeRequestCodeReviewResponse) {}
+  rpc RestartYaMaPipeLine(RestartYaMaPipeLineRequest) returns (RestartYaMaPipeLineResponse) {}
 }

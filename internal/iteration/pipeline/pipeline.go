@@ -216,6 +216,48 @@ func StartPipeline(c *context.Context) ([]byte, error) {
 	return nil,err
 }
 
+func ReStartPipelineWithArgs(pipelineId, iterId, actionId int64, actorName, iterDevelopBranch, iterTargetBranch string,
+	env, actionInfo, appOwner, appName string, mrCodeReviews []string) error {
+	actionGroupInfo := fmt.Sprintf("%s -> %s", iterDevelopBranch, iterTargetBranch)
+	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
+	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
+	db.UpdateIterationState(iterId, env)
+	repoURL := db.GetApplicationRepoURLByOwnerAndRepo(appOwner, appName)
+
+	// reg pipeline
+	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
+		ActionGroupInfo: actionGroupInfo, ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExecPath: fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(10,"")),
+	}
+	// prepare workspace
+	os.MkdirAll(pipeExec.ExecPath, os.ModePerm)
+	_, _ = db.InsertIterationAction(&pipeExec)
+	pipeline,_ := db.GetPipelineById(pipelineId)
+
+	// reg merge request code review
+	_, mergeRequestCodeReviewUrl := invokerImpl.InvokeRegisterMergeRequestService(appOwner, appName, iterDevelopBranch, iterTargetBranch,
+		pipeExec.Id, 1, 11, mrCodeReviews, pipelineId, actorName, iterId, env, actionInfo)
+	mergeReq := MergeRequest{UserName: appOwner, Repository: appName, SourceBranch: iterDevelopBranch, TargetBranch: iterTargetBranch, MergeInfo: actionInfo}
+	mergeReqData, _ := json.Marshal(mergeReq)
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
+		"mergeRequestCodeReviewUrl":mergeRequestCodeReviewUrl,
+		"sourceBranch":iterDevelopBranch,
+		"targetBranch":iterTargetBranch,
+		"appOwner":appOwner,
+		"appName":appName,
+		"repoURL":repoURL,
+		"appPath":appName,
+		"pmdScanPath":fmt.Sprintf(PMD_SCAN_PATH, appName, "src"),
+		"mergeArg":fmt.Sprintf("'%s'",string(mergeReqData)),
+		"mergeInfo":actionInfo,
+		"yamaHubAddr":"localhost:8000",
+		"mergeService":"proto.YaMaHubBranchService/Merge2Branch",
+	})
+	e.UnReg(actionId)
+	_ = e.Reg(runtimePipeline)
+
+	return nil
+}
+
 func StartPipelineInternal(c *context.Context) ([]byte, error) {
 	// form data
 	pipelineId := c.ParamsInt64(":pipelineId")
@@ -248,7 +290,7 @@ func StartPipelineInternal(c *context.Context) ([]byte, error) {
 
 	// reg merge request code review
 	_, mergeRequestCodeReviewUrl := invokerImpl.InvokeRegisterMergeRequestService(appOwner, appName, iterDevelopBranch, iterTargetBranch,
-		pipeExec.Id, 1, 11, mrCodeReviews)
+		pipeExec.Id, 1, 11, mrCodeReviews, pipelineId, actorName, iterId, env, actionInfo)
 	mergeReq := MergeRequest{UserName: appOwner, Repository: appName, SourceBranch: iterDevelopBranch, TargetBranch: iterTargetBranch, MergeInfo: actionInfo}
 	mergeReqData, _ := json.Marshal(mergeReq)
 	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{

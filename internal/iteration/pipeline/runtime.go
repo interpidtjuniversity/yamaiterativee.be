@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
 	"yama.io/yamaIterativeE/internal/iteration/stage"
 	"yama.io/yamaIterativeE/internal/iteration/step"
 	"yama.io/yamaIterativeE/internal/util/guc"
@@ -286,6 +287,9 @@ func (e *Executor) UnReg(actionId int64) error {
 	e.actions.Remove(element)
 	err := Handle(p)
 	e.Lock.Unlock()
+	if element!=nil {
+		invokerImpl.InvokeFinishMergeRequestPipelineService(actionId)
+	}
 	// handle
 
 	return err
@@ -317,6 +321,7 @@ func (e *Executor) Start() {
 			}
 			// remove
 			for i := 0; i < len(removeList); i++ {
+				invokerImpl.InvokeFinishMergeRequestPipelineService((removeList[i].Value).(*RuntimePipeline).ID)
 				e.actions.Remove(removeList[i])
 			}
 			e.Lock.Unlock()

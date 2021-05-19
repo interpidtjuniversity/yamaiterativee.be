@@ -55,6 +55,11 @@ message RegisterMRRequest{
   int64  stagedId = 6;
   int64  stepId = 7;
   repeated string reviewers = 8;
+  int64  pipelineId = 9;
+  string actorName = 10;
+  int64  iterationId = 11;
+  string env = 12;
+  string actionInfo = 13;
 }
 message RegisterMRResponse{
   string showDiffUri = 1;
@@ -89,6 +94,13 @@ message QueryAppAllBranchResponse{
   repeated string appBranches = 1;
 }
 
+message FinishMergeRequestPipelineRequest{
+  int64 actionId = 1;
+}
+message FinishMergeRequestPipelineResponse{
+  bool success = 1;
+}
+
 service YaMaHubBranchService{
   rpc CreateBranch(CreateBranchRequest) returns (CreateBranchResponse) {}
   rpc DeleteBranch(DeleteBranchRequest) returns (DeleteBranchResponse) {}
@@ -98,4 +110,5 @@ service YaMaHubBranchService{
   rpc QueryRepoBranchCommit(CommitQueryRequest) returns (CommitQueryResponse) {}
   rpc QueryMasterLatestCommit(MasterLatestCommitQueryRequest) returns (MasterLatestCommitQueryResponse) {}
   rpc QueryAppAllBranch(QueryAppAllBranchRequest) returns (QueryAppAllBranchResponse) {}
+  rpc FinishMergeRequestPipeline(FinishMergeRequestPipelineRequest) returns (FinishMergeRequestPipelineResponse) {}
 }

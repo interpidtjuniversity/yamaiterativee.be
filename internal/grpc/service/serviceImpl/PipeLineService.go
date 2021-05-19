@@ -21,4 +21,14 @@ func (p *PileLineService) PassMergeRequestCodeReview(ctx context.Context, reques
 	}, nil
 }
 
+func (p *PileLineService) RestartYaMaPipeLine(ctx context.Context, request *RestartYaMaPipeLineRequest) (*RestartYaMaPipeLineResponse, error) {
+	baseResponse := &RestartYaMaPipeLineResponse{}
+	err := pipeline.ReStartPipelineWithArgs(request.PipelineId, request.IterationId, request.ActionId, request.ActorName, request.SourceBranch, request.TargetBranch,
+		request.Env, request.MrInfo, request.AppOwner, request.AppName, request.MrCodeReviews)
+	if err==nil {
+		baseResponse.Success = true
+	}
+	return baseResponse, err
+}
+
 
