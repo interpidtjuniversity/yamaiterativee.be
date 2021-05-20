@@ -1,3 +1,4 @@
 #!/bin/bash
 
-echo test
+cd $1
+mvn test

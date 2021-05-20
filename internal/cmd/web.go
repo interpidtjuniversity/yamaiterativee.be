@@ -179,6 +179,8 @@ func runWeb(c *cli.Context) error {
 							m.Get("/:stageId/state", pipeline.IterStageState)
 							m.Group("/:stageId/step", func() {
 								m.Get("/:stepId/state", pipeline.IterStepState)
+								m.Post("/:stepId/log", pipeline.IterStepLog)
+								m.Post("/:stepId/test/codeCovered", pipeline.IterStepTestCodeCovered)
 							})
 						})
 					})

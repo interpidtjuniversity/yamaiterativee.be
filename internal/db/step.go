@@ -13,13 +13,24 @@ type Step struct {
 	IsPublic    bool     `xorm:"is_public"`
 	Img         string   `xorm:"img"`
 	Type        string   `xorm:"type"`
+	LogType     int      `xorm:"log_type"`
 }
 
-func BranchQueryStepsByIds(stageId []int64) ([]*Step, error) {
+func BranchQueryStepsByIds(stepId []int64) ([]*Step, error) {
 	var steps []*Step
-	err := x.Where(builder.In("id", stageId)).Find(&steps)
+	err := x.Where(builder.In("id", stepId)).Find(&steps)
 	if err != nil {
 		return nil, err
 	}
 	return steps, nil
+}
+
+func GetStepLogTypeById(stepId int64) int {
+	step := new(Step)
+	exist, err := x.Table("step").Cols("log_type").Where(builder.Eq{"id": stepId}).Get(step)
+	if !exist || err != nil {
+		return -1
+	}
+	return step.LogType
+
 }

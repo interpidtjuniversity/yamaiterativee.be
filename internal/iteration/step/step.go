@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"yama.io/yamaIterativeE/internal/iteration/step/log"
+	"yama.io/yamaIterativeE/internal/iteration/step/report"
 )
 
 const (
@@ -35,4 +37,22 @@ func GetRandomString(n int) string {
 		result = append(result, bytes[rand.Intn(len(bytes))])
 	}
 	return string(result)
+}
+
+func GetLog(path, execPath string, logTypeNum int, appName string) []byte {
+	logType := log.Type(logTypeNum)
+	switch logType {
+	case log.PMDCollapse:
+		return log.ConstructCollapseLog(path, execPath)
+	case log.Text:
+		return log.ConstructTextLog(path)
+	case log.TestReport:
+		return log.ConstructTestReport(execPath, appName)
+	default:
+		return nil
+	}
+}
+
+func GetFileCovered(execPath, appName, packageName, fileName string) []byte {
+	return report.GetFileCovered(execPath, appName, packageName, fileName)
 }

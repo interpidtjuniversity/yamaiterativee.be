@@ -507,6 +507,37 @@ func IterStageState(c *context.Context) ([]byte, error) {
 	return data,err
 }
 
+func IterStepLog(c *context.Context) ([]byte, error) {
+	appName := c.Query("appName")
+	actionId := c.ParamsInt64(":actionId")
+	stageId := c.ParamsInt64(":stageId")
+	stepId := c.ParamsInt64(":stepId")
+	logType := db.GetStepLogTypeById(stepId)
+	stageExec,_ := db.QueryStageExec(actionId, stageId)
+	if stageExec != nil {
+		stepExec,_ := db.GetStepExecByStageExecIdAndStepId(stageExec.Id, stepId)
+		return step.GetLog(stepExec.LogPath, stepExec.ExecPath, logType, appName), nil
+	} else {
+		return nil, nil
+	}
+}
+
+func IterStepTestCodeCovered(c *context.Context) ([]byte, error) {
+	appName := c.Query("appName")
+	packageName := c.Query("package")
+	fileName := c.Query("fileName")
+	actionId := c.ParamsInt64(":actionId")
+	stageId := c.ParamsInt64(":stageId")
+	stepId := c.ParamsInt64(":stepId")
+	stageExec,_ := db.QueryStageExec(actionId, stageId)
+	if stageExec != nil {
+		stepExec,_ := db.GetStepExecByStageExecIdAndStepId(stageExec.Id, stepId)
+		return step.GetFileCovered(stepExec.ExecPath, appName, packageName, fileName), nil
+	} else {
+		return nil, nil
+	}
+}
+
 func IterStepState(c *context.Context) ([]byte, error) {
 	actionId := c.ParamsInt64(":actionId")
 	stageId := c.ParamsInt64(":stageId")
