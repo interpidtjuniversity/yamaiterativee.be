@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"time"
 	"yama.io/yamaIterativeE/internal/db"
+	"yama.io/yamaIterativeE/internal/iteration/step/beanfactory"
 )
 
 type RuntimeStepState int
@@ -127,6 +128,13 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
+		return nil, err
+	} else if t.Type == "code" {
+		os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
+		bean := beanfactory.GetBean(t.Command)
+		t.transformArgs(t.Env)
+		t.Args = append(t.Args, t.LogPath)
+		err := bean.Execute(t.Args)
 		return nil, err
 	}
 	return nil,nil

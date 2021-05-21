@@ -101,6 +101,21 @@ func GetUserAllServers(c *context.Context) []byte {
 	return data
 }
 
+func GetUserAllServersByApplication(c *context.Context) []byte {
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+	username := c.Params(":username")
+
+	serverNames := db.GetServerByAppAndOwner(appOwner, appName, username)
+	if len(serverNames) == 0{
+		return []byte("[]")
+	}
+
+	data,_ := json.Marshal(serverNames)
+
+	return data
+}
+
 
 func GetAppDevServer(c *context.Context) []byte {
 	appOwner := c.Params(":appOwner")

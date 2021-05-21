@@ -191,8 +191,48 @@ type groupOptions struct {
 	Title string `json:"title"`
 }
 
+func StartDeployPipelineInternal(c *context.Context) ([]byte, error) {
+	pipelineId := c.ParamsInt64(":pipelineId")
+	actorName := c.Query("actorName")
+	iterId := c.QueryInt64("iterId")
+	branchName := c.Query("branchName")
+	env := c.Query("env")
+	actionInfo := fmt.Sprintf("%s 手动触发pipeline", actorName)
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+	serverName := c.Query("serverName")
+	repoURL := db.GetApplicationRepoURLByOwnerAndRepo(appOwner, appName)
+	serverIP := db.GetServerIPByServerName(serverName)
+	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
+	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
 
-func StartPipeline(c *context.Context) ([]byte, error) {
+	// reg pipeline
+	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
+		ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExecPath: fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(10,"")),
+	}
+	// prepare workspace
+	os.MkdirAll(pipeExec.ExecPath, os.ModePerm)
+	_, _ = db.InsertIterationAction(&pipeExec)
+	pipeline,_ := db.GetPipelineById(pipelineId)
+
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
+		"appOwner":appOwner,
+		"appName":appName,
+		"repoURL":repoURL,
+		"branchName": branchName,
+		"execPath": pipeExec.ExecPath,
+		"env":env,
+		"serverName": serverName,
+		"serverIP": serverIP,
+		"iterId": strconv.Itoa(int(iterId)),
+		"appPath":appName,
+		"pmdScanPath":fmt.Sprintf(PMD_SCAN_PATH, appName, "src"),
+	})
+	_ = e.Reg(runtimePipeline)
+	return nil, nil
+}
+
+func StartBasicMRPipeline(c *context.Context) ([]byte, error) {
 	// get pipeline
 	pipelineId := c.ParamsInt64(":pipelineId")
 	actorName := c.Query("actorName")
@@ -216,7 +256,7 @@ func StartPipeline(c *context.Context) ([]byte, error) {
 	return nil,err
 }
 
-func ReStartPipelineWithArgs(pipelineId, iterId, actionId int64, actorName, iterDevelopBranch, iterTargetBranch string,
+func ReStartBasicMRPipelineWithArgs(pipelineId, iterId, actionId int64, actorName, iterDevelopBranch, iterTargetBranch string,
 	env, actionInfo, appOwner, appName string, mrCodeReviews []string) error {
 	actionGroupInfo := fmt.Sprintf("%s -> %s", iterDevelopBranch, iterTargetBranch)
 	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
@@ -258,7 +298,7 @@ func ReStartPipelineWithArgs(pipelineId, iterId, actionId int64, actorName, iter
 	return nil
 }
 
-func StartPipelineInternal(c *context.Context) ([]byte, error) {
+func StartBasicMRPipelineInternal(c *context.Context) ([]byte, error) {
 	// form data
 	pipelineId := c.ParamsInt64(":pipelineId")
 	actorName := c.Query("actorName")

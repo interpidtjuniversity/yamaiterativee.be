@@ -119,7 +119,10 @@ func runWeb(c *cli.Context) error {
 
 			m.Group("/iterations", func() {
 				m.Group("/createmr", func() {
-					m.Post("/:pipelineId", pipeline.StartPipelineInternal)
+					m.Post("/:pipelineId", pipeline.StartBasicMRPipelineInternal)
+				})
+				m.Group("/tigerpipeline", func() {
+					m.Post("/:pipelineId", pipeline.StartDeployPipelineInternal)
 				})
 				m.Group("/user/:username", func() {
 					m.Get("/all", iterations.GetUserAllIterations)
@@ -148,6 +151,7 @@ func runWeb(c *cli.Context) error {
 				})
 				m.Group("/user/:username", func() {
 					m.Get("/all", server.GetUserAllServers)
+					m.Post("/all", server.GetUserAllServersByApplication)
 				})
 				m.Group("/newserver", func() {
 					m.Post("/new", server.NewServer)
@@ -185,7 +189,7 @@ func runWeb(c *cli.Context) error {
 						})
 					})
 					m.Group("/new", func() {
-						m.Get("/:pipelineId", pipeline.StartPipeline)
+						m.Get("/:pipelineId", pipeline.StartBasicMRPipeline)
 					})
 				})
 
