@@ -191,6 +191,42 @@ type groupOptions struct {
 	Title string `json:"title"`
 }
 
+func StartNewServerPipelineInternal(c *context.Context) ([]byte, error) {
+	pipelineId := c.ParamsInt64(":pipelineId")
+	owner := c.Query("owner")
+	iterId := c.QueryInt64("iterId")
+	env := c.Query("env")
+	appType := c.Query("appType")
+	appOwner := c.Query("appOwner")
+	appName := c.Query("appName")
+	serverType := c.Query("serverType")
+	actionInfo := fmt.Sprintf("%s 申请了服务器", owner)
+	avatarSrc,_ := db.GetUserAvatarByUserName(owner)
+	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
+
+	// reg pipeline
+	pipeExec := db.IterationAction{ActorName: owner, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
+		ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExecPath: fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(10,"")),
+	}
+
+	// prepare workspace
+	os.MkdirAll(pipeExec.ExecPath, os.ModePerm)
+	_, _ = db.InsertIterationAction(&pipeExec)
+	pipeline,_ := db.GetPipelineById(pipelineId)
+
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
+		"appOwner":appOwner,
+		"appName":appName,
+		"execPath": pipeExec.ExecPath,
+		"appType": appType,
+		"serverType": serverType,
+		"env":env,
+		"iterId": strconv.Itoa(int(iterId)),
+	})
+	_ = e.Reg(runtimePipeline)
+	return nil, nil
+}
+
 func StartDeployPipelineInternal(c *context.Context) ([]byte, error) {
 	pipelineId := c.ParamsInt64(":pipelineId")
 	actorName := c.Query("actorName")

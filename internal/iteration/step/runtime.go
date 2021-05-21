@@ -134,7 +134,7 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		bean := beanfactory.GetBean(t.Command)
 		t.transformArgs(t.Env)
 		t.Args = append(t.Args, t.LogPath)
-		err := bean.Execute(t.Args)
+		err := bean.Execute(t.Args, t.Env)
 		return nil, err
 	}
 	return nil,nil

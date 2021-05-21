@@ -2,5 +2,5 @@ package bean
 
 
 type Bean interface {
-	Execute([]string) error
+	Execute([]string, *map[string]interface{}) error
 }

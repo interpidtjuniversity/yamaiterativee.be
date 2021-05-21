@@ -124,6 +124,9 @@ func runWeb(c *cli.Context) error {
 				m.Group("/tigerpipeline", func() {
 					m.Post("/:pipelineId", pipeline.StartDeployPipelineInternal)
 				})
+				m.Group("/newserver", func() {
+					m.Post("/:pipelineId", pipeline.StartNewServerPipelineInternal)
+				})
 				m.Group("/user/:username", func() {
 					m.Get("/all", iterations.GetUserAllIterations)
 				})

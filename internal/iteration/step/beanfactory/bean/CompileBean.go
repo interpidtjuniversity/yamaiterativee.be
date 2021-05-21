@@ -22,7 +22,7 @@ type CompileBean struct {
 //   0        1     2      3      4      5      6         7         8            9
 //appOwner appName repo branch execPath env serverName serverIP iterId(string) logPath
 
-func (cb *CompileBean) Execute(stringArgs []string) error {
+func (cb *CompileBean) Execute(stringArgs []string, env *map[string]interface{}) error {
 	// 1.parse arg
 	if len(stringArgs) != 10{
 		return fmt.Errorf("arguement error")

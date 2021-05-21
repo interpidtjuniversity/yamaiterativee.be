@@ -15,7 +15,7 @@ type DeployBean struct {
 }
 
 // appName, execPath, serverName, serverIP
-func (db *DeployBean) Execute(stringArgs []string) error{
+func (db *DeployBean) Execute(stringArgs []string, env *map[string]interface{}) error{
 	return db.deploy(stringArgs[0], stringArgs[1], stringArgs[2], stringArgs[3])
 }
 
