@@ -6,8 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"regexp"
-	"strings"
 	"yama.io/yamaIterativeE/internal/util"
 )
 
@@ -38,25 +36,8 @@ func GetFileCovered(execPath, appName, packageName, fileName string) []byte {
 		lines = lines[1:len(lines)-1]
 	}
 	var jacocoFileCoverLine []JacocoFileCoverLine
-	reFCPrefix := regexp.MustCompile("<span class=\"fc\" id=\"L-?[0-9]\\d*\">")
-	reNCPrefix := regexp.MustCompile("<span class=\"nc\" id=\"L-?[0-9]\\d*\">")
-	reSuffix := regexp.MustCompile("</span>")
 	for i:=0; i<len(lines); i++ {
 		coverLine := JacocoFileCoverLine{}
-		if strings.HasPrefix(lines[i], "<span class=\"fc\"") {
-			// cover
-			lines[i] = reFCPrefix.ReplaceAllString(lines[i], "")
-			lines[i] = reSuffix.ReplaceAllString(lines[i], "")
-			coverLine.Type = "fc"
-		} else if strings.HasPrefix(lines[i], "<span class=\"nc\"") {
-			// uncover
-			lines[i] = reNCPrefix.ReplaceAllString(lines[i], "")
-			lines[i] = reSuffix.ReplaceAllString(lines[i], "")
-			coverLine.Type = "nc"
-		} else {
-			// default code
-			coverLine.Type = "default"
-		}
 		coverLine.Content = lines[i]
 		jacocoFileCoverLine = append(jacocoFileCoverLine, coverLine)
 	}

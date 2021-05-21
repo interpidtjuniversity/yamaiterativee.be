@@ -47,6 +47,10 @@ type JacocoTestReport struct {
 	MethodCovered      int    `json:"methodCovered"`
 }
 
+type SimpleLogLine struct {
+	Line string `json:"line"`
+}
+
 type Log struct {
 	Type Type        `json:"type"`
 	Data interface{} `json:"data"`
@@ -61,8 +65,19 @@ func readLog(path string) []byte {
 }
 
 func ConstructTextLog(path string) []byte {
-	data := readLog(path)
-	log := Log{Type: Text, Data: string(data)}
+	logFile, _ := os.Open(path)
+	defer logFile.Close()
+	var logData []SimpleLogLine
+	buffer := bufio.NewReader(logFile)
+	for{
+		line, _, e := buffer.ReadLine()
+		if e == io.EOF{
+			break
+		}
+		logData = append(logData, SimpleLogLine{Line: string(line)})
+	}
+
+	log := Log{Type: Text, Data: logData}
 	content, _ := json.Marshal(log)
 	return content
 }
