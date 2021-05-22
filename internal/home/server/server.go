@@ -152,6 +152,28 @@ func CreateIterationDebugGroup(c *context.Context) []byte {
 	return []byte("success")
 }
 
+func UpdateIterationDebugGroup(c *context.Context) []byte {
+	debuggingGroup := c.Query("debuggingGroup")
+	groupServerBytes := []byte(c.Query("groupServer"))
+	groupServer := make([]GroupServerData, 1)
+	json.Unmarshal(groupServerBytes, &groupServer)
+	var filterServerName []string
+	for _, server := range groupServer {
+		if server.AppName == "" || server.AppOwner == "" || server.AppServer == "" {
+			continue
+		}
+		filterServerName = append(filterServerName, server.AppServer)
+	}
+	// 1. clear old
+	names, _ := db.BranchQueryServerNameByGroupId([]string{debuggingGroup})
+	db.BranchUpdateServerGroup(names, "")
+	if len(filterServerName) != 0 {
+		// 2. set new
+		db.BranchUpdateServerGroup(filterServerName, debuggingGroup)
+	}
+	return nil
+}
+
 func QueryIterationDebugGroup(c *context.Context) []byte {
 	iterId := c.ParamsInt64("iterId")
 	servers, _ := db.GetGroupedDevServerByIterId(iterId)

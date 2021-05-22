@@ -221,6 +221,7 @@ func StartNewServerPipelineInternal(c *context.Context) ([]byte, error) {
 		"appType": appType,
 		"serverType": serverType,
 		"env":env,
+		"owner":owner,
 		"iterId": strconv.Itoa(int(iterId)),
 	})
 	_ = e.Reg(runtimePipeline)

@@ -194,6 +194,16 @@ func BranchQueryServerByGroupId(groupIds []string) ([]*Server, error) {
 	return servers, err
 }
 
+func BranchQueryServerNameByGroupId(groupIds []string) ([]string, error) {
+	var servers []*Server
+	var serverNames []string
+	err := x.Table("server").Cols("name").Where(builder.In("group_id", groupIds)).Find(&servers)
+	for _, v := range servers {
+		serverNames = append(serverNames, v.Name)
+	}
+	return serverNames, err
+}
+
 func GetServerIPByServerName(serverName string) string {
 	server := new(Server)
 	x.Table("server").Cols("ip").Where(builder.Eq{"name":serverName}).Get(server)

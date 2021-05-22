@@ -11,9 +11,9 @@ type ServerImageBuildBean struct {
 	Bean
 }
 
-// appType
+// appType logPath
 func (sibb *ServerImageBuildBean) Execute(stringArgs []string, env *map[string]interface{}) error{
-	if len(stringArgs)!=1 {
+	if len(stringArgs)!=2 {
 		return fmt.Errorf("arguement error")
 	}
 	sibb.build(stringArgs[0], env)

@@ -9,9 +9,9 @@ type ServerReleaseBean struct {
 	Bean
 }
 
-//
+// logPath
 func (srb *ServerReleaseBean) Execute(stringArgs []string, env *map[string]interface{}) error{
-	if len(stringArgs)!=0 {
+	if len(stringArgs)!=1 {
 		return fmt.Errorf("arguement error")
 	}
 	return srb.release(stringArgs, env)

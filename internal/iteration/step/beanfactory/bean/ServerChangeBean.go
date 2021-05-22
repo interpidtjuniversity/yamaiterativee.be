@@ -11,10 +11,10 @@ import (
 type ServerChangeBean struct {
 	Bean
 }
-//    0       1        2       3         4         5
-// appOwner appName   owner  appType   iterId   serverType
+//    0       1        2       3         4         5         6
+// appOwner appName   owner  appType   iterId   serverType logPath
 func (sb *ServerChangeBean) Execute(stringArgs []string, env *map[string]interface{}) error{
-	if len(stringArgs) != 6 {
+	if len(stringArgs) != 7 {
 		return fmt.Errorf("arguement error")
 	}
 	iterId, _ := strconv.Atoi(stringArgs[4])

@@ -8,7 +8,7 @@ import (
 )
 
 //1. const info for each step in each iteration
-var ieah = &iterEnvActionHolder{m: map[string][]iterEnvAction{"dev": {{ButtonShowWords:"完成开发阶段", ID: "finishDev"}, {ButtonShowWords:"提交MR", ID: "submitMRDev"}, {ButtonShowWords:"Jar包管理", ID: "jarManageDev"}, {ButtonShowWords:"配置变更",ID: "changeConfigDev"}, {ButtonShowWords:"触发pipeline",ID: "triggerPipelineDev"}, {ButtonShowWords:"申请服务器",ID: "applyServerDev"}, {ButtonShowWords:"新建联调环境", ID: "newJointDebuggingDev"}},
+var ieah = &iterEnvActionHolder{m: map[string][]iterEnvAction{"dev": {{ButtonShowWords:"完成开发阶段", ID: "finishDev"}, {ButtonShowWords:"提交MR", ID: "submitMRDev"}, {ButtonShowWords:"Jar包管理", ID: "jarManageDev"}, {ButtonShowWords:"配置变更",ID: "changeConfigDev"}, {ButtonShowWords:"触发pipeline",ID: "triggerPipelineDev"}, {ButtonShowWords:"申请服务器",ID: "applyServerDev"}, {ButtonShowWords:"联调环境", ID: "jointDebuggingDev"}},
 	"itg":       {{ButtonShowWords:"完成集成阶段", ID: "finishItg"}, {ButtonShowWords:"提交MR", ID: "submitMRItg"}, {ButtonShowWords:"Jar包管理",ID: "jarManageItg"}, {ButtonShowWords:"触发pipeline",ID: "triggerPipelineItg"}},
 	"pre":       {{ButtonShowWords:"完成预发阶段",ID: "finishPre"}, {ButtonShowWords:"提交MR",ID: "submitMRPre"}, {ButtonShowWords:"Jar包管理",ID: "jarManagePre"}, {ButtonShowWords:"触发pipeline",ID: "triggerPipelinePre"}},
 	"grayscale": {{ButtonShowWords:"完成灰度阶段", ID: "finishGray"}, {ButtonShowWords:"配置白名单", ID: "whiteList"}, {ButtonShowWords:"配置黑名单", ID: "blackList"}, {ButtonShowWords:"流量控制", ID: "flowControl"}},
