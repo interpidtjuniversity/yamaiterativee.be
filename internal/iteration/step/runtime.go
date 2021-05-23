@@ -130,6 +130,7 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		}
 		return nil, err
 	} else if t.Type == "code" {
+		time.Sleep(time.Duration(5)*time.Second)
 		os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
 		bean := beanfactory.GetBean(t.Command)
 		t.transformArgs(t.Env)

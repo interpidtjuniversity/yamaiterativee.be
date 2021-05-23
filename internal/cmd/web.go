@@ -130,6 +130,8 @@ func runWeb(c *cli.Context) error {
 				m.Group("/user/:username", func() {
 					m.Get("/all", iterations.GetUserAllIterations)
 				})
+				m.Post("/advance/:env", pipeline.AdvanceIteration)
+				m.Post("/syncMaster", pipeline.SyncMaster)
 
 				m.Group("/:iterId", func() {
 					m.Group("/optionconfig", func() {

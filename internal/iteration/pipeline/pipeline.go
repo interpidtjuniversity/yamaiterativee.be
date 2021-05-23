@@ -203,7 +203,7 @@ func StartNewServerPipelineInternal(c *context.Context) ([]byte, error) {
 	actionInfo := fmt.Sprintf("%s 申请了服务器", owner)
 	avatarSrc,_ := db.GetUserAvatarByUserName(owner)
 	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
-
+	db.UpdateIterationState(iterId, env)
 	// reg pipeline
 	pipeExec := db.IterationAction{ActorName: owner, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
 		ActionInfo: actionInfo, AvatarSrc: avatarSrc, ExecPath: fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(10,"")),
@@ -674,6 +674,64 @@ func IterStageInfo(c *context.Context) ([]byte, error){
 
 	data, err := json.Marshal(infoSteps)
 	return data, err
+}
+
+func AdvanceIteration(c *context.Context) []byte {
+	iterId := c.QueryInt64("iterId")
+	env := c.Params("env")
+	curState := new(db.IterationState).FromString(env)
+	nextState := curState.NextState()
+	if nextState == db.PRE_STATE {
+		iterId := c.QueryInt64("iterId")
+		iteration,_ := db.GetIterationById(iterId)
+		err := sync(iteration, iteration.IterBranch, "master")
+		if err != nil {
+			return []byte("error")
+		}
+	}
+
+
+	db.UpdateIterationState(iterId, nextState.ToString())
+	actGroupId, _ := db.GetOrGenerateIterationActGroup(iterId, nextState.ToString())
+	switch nextState {
+	case db.ITG_STATE:
+		db.UpdateIterationItgActGroup(iterId, actGroupId)
+	case db.PRE_STATE:
+		db.UpdateIterationPreActGroup(iterId, actGroupId)
+	}
+	return []byte("success")
+}
+
+func SyncMaster(c *context.Context) []byte {
+	iterId := c.QueryInt64("iterId")
+	iteration,_ := db.GetIterationById(iterId)
+	err := sync(iteration, "master", iteration.IterBranch)
+	if err!=nil {
+		return []byte("error")
+	}
+	return []byte("success")
+}
+
+// source -> target
+func sync(iteration *db.Iteration, sourceBranch, targetBranch string) error {
+	// check if e_branch can merge to master
+	repoURL := db.GetApplicationRepoByOwnerAndRepo(iteration.OwnerName, iteration.RepoName)
+	execPath := fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(20,""))
+	os.MkdirAll(execPath, os.ModePerm)
+	_,_,err := step.RunShellStep("/internal/iteration/step/command/pre-merge.sh", execPath, []string{repoURL,
+		sourceBranch, targetBranch, iteration.RepoName}...)
+	if err != nil {
+		return err
+	} else {
+		_, _, err = step.RunShellStep("/internal/iteration/step/command/merge.sh", execPath, []string{
+			iteration.OwnerName, iteration.RepoName, sourceBranch, targetBranch, "", "localhost:8000",
+			"proto.YaMaHubBranchService/Merge2Branch", iteration.RepoName}...
+		)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func ParseDagAndLayout(pipeline *db.Pipeline)([][]stage.Endpoint, []edge, error){

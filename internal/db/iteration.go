@@ -15,7 +15,8 @@ const (
 	PRE_STATE 		IterationState = 2
 	GARY_STATE 		IterationState = 3
 	PROD_STATE 		IterationState = 4
-	UNKNOWN_STATE 	IterationState = 5
+	FINISH_STATE    IterationState = 5
+	UNKNOWN_STATE 	IterationState = 6
 )
 
 func (is IterationState) ToString() string {
@@ -51,6 +52,23 @@ func (is IterationState)FromString(env string) IterationState {
 		return GARY_STATE
 	case "prod":
 		return PROD_STATE
+	default:
+		return UNKNOWN_STATE
+	}
+}
+
+func (is IterationState) NextState() IterationState {
+	switch is {
+	case INIT_STATE:
+		return DEV_STATE
+	case DEV_STATE:
+		return ITG_STATE
+	case ITG_STATE:
+		return PRE_STATE
+	case PRE_STATE:
+		return PROD_STATE
+	case PROD_STATE:
+		return FINISH_STATE
 	default:
 		return UNKNOWN_STATE
 	}
@@ -207,6 +225,22 @@ func UpdateIterationState(iterId int64, s string) error {
 			_, err = x.Table("iteration").Cols("iter_state").Where(builder.Eq{"id":iterId}).Update(now)
 		}
 	}
+	return err
+}
+
+func UpdateIterationDevActGroup(iterId, actGroupId int64) error {
+	iteration := Iteration{IterDevActGroup: actGroupId}
+	_, err := x.Table("iteration").Cols("iter_dev_act_group").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+func UpdateIterationItgActGroup(iterId, actGroupId int64) error{
+	iteration := Iteration{IterItgActGroup: actGroupId}
+	_, err := x.Table("iteration").Cols("iter_itg_act_group").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+func UpdateIterationPreActGroup(iterId, actGroupId int64) error{
+	iteration := Iteration{IterPreActGroup: actGroupId}
+	_, err := x.Table("iteration").Cols("iter_pre_act_group").Where(builder.Eq{"id":iterId}).Update(&iteration)
 	return err
 }
 
