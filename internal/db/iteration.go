@@ -9,14 +9,14 @@ import (
 type IterationState int
 
 const (
-	INIT_STATE 		IterationState = -1
-	DEV_STATE 		IterationState = 0
-	ITG_STATE 		IterationState = 1
-	PRE_STATE 		IterationState = 2
-	GARY_STATE 		IterationState = 3
-	PROD_STATE 		IterationState = 4
-	FINISH_STATE    IterationState = 5
-	UNKNOWN_STATE 	IterationState = 6
+	INIT_STATE    IterationState = -1
+	DEV_STATE     IterationState = 0
+	ITG_STATE     IterationState = 1
+	PRE_STATE     IterationState = 2
+	GRAY_STATE    IterationState = 3
+	PROD_STATE    IterationState = 4
+	FINISH_STATE  IterationState = 5
+	UNKNOWN_STATE IterationState = 6
 )
 
 func (is IterationState) ToString() string {
@@ -29,8 +29,8 @@ func (is IterationState) ToString() string {
 		return "itg"
 	case PRE_STATE:
 		return "pre"
-	case GARY_STATE:
-		return "gary"
+	case GRAY_STATE:
+		return "gray"
 	case PROD_STATE:
 		return "prod"
 	default:
@@ -48,8 +48,8 @@ func (is IterationState)FromString(env string) IterationState {
 		return ITG_STATE
 	case "pre":
 		return PRE_STATE
-	case "gary":
-		return GARY_STATE
+	case "gray":
+		return GRAY_STATE
 	case "prod":
 		return PROD_STATE
 	default:
@@ -66,6 +66,8 @@ func (is IterationState) NextState() IterationState {
 	case ITG_STATE:
 		return PRE_STATE
 	case PRE_STATE:
+		return GRAY_STATE
+	case GRAY_STATE:
 		return PROD_STATE
 	case PROD_STATE:
 		return FINISH_STATE
@@ -79,7 +81,7 @@ type Iteration struct {
 	IterCreator     string         `xorm:"iter_creator_uid"`
 	IterType        string         `xorm:"iter_type"`
 	IterAdmin       []string       `xorm:"iter_admin"`
-	IterState       IterationState `xorm:"iter_state"` // 0,1,2,3,4   -> dev,itg,pre,gary.prod
+	IterState       IterationState `xorm:"iter_state"` // 0,1,2,3,4   -> dev,itg,pre,gray.prod
 	IterBranch      string         `xorm:"iter_branch"`
 	IterDevActGroup int64          `xorm:"iter_dev_act_group"`
 	IterPreActGroup int64          `xorm:"iter_pre_act_group"`

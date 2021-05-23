@@ -10,6 +10,8 @@ func init() {
 	beanMap["serverChangeBean"] = &bean.ServerChangeBean{}
 	beanMap["serverImageBuildBean"] = &bean.ServerImageBuildBean{}
 	beanMap["serverReleaseBean"] = &bean.ServerReleaseBean{}
+	beanMap["branchDeployBean"] = &bean.BranchDeployBean{}
+	beanMap["branchCompileBean"] = &bean.BranchCompileBean{}
 }
 
 func GetBean(beanName string) bean.Bean{

@@ -165,6 +165,9 @@ func runWeb(c *cli.Context) error {
 				m.Group("/newdeploy", func() {
 					m.Post("/new", server.DeployAppInServer)
 				})
+				m.Group("/redeploy", func() {
+					m.Post("/new", server.DeployAppInServer)
+				})
 			})
 		})
 

@@ -81,7 +81,7 @@ func NewServer(c *context.Context) []byte {
 func GetUserAllServers(c *context.Context) []byte {
 	owner := c.Params(":username")
 	servers, _ := db.GetServerByOwnerName(owner)
-	var serverDatas []ServerData
+	var serverDatas = make([]ServerData,0)
 	for _, server := range servers {
 		data := ServerData{
 			Name: server.Name,
@@ -106,12 +106,18 @@ func GetUserAllServersByApplication(c *context.Context) []byte {
 	appName := c.Query("appName")
 	username := c.Params(":username")
 
-	serverNames := db.GetServerByAppAndOwner(appOwner, appName, username)
-	if len(serverNames) == 0{
-		return []byte("[]")
+	servers,_ := db.GetServerByAppAndOwner(appOwner, appName, username)
+	var serverDatas = make([]ServerData,0)
+	for _, server := range servers {
+		data := ServerData{
+			Name: server.Name,
+			Env: server.Type.ToString(),
+			State: server.State.ToString(),
+		}
+		serverDatas = append(serverDatas, data)
 	}
 
-	data,_ := json.Marshal(serverNames)
+	data,_ := json.Marshal(serverDatas)
 
 	return data
 }

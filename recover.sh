@@ -6,6 +6,8 @@
 #pouch run -d --name 24391683b27111eba6c5_interpidtjuniversity.miniselfop.dev --net d2fd841db19011e JavaImage top -b
 #pouch run -d --name 28d20b0fbad111eb943d_interpidtjuniversity.miniselfop.dev --net d2fd841db19011e JavaImage top -b
 #pouch run -d --name ad7fe219bb8611eb9c0b_interpidtjuniversity.miniselfop.dev --net d2fd841db19011e JavaImage top -b
+#pouch run -d --name ad7fe219bb8611ebgrev_interpidtjuniversity.miniselfop.pre --net d2fd841db19011e JavaImage top -b
+#pouch run -d --name ad7xf679bb8611ebgrev_interpidtjuniversity.miniselfop.pre --net d2fd841db19011e JavaImage top -b
 
 
 #

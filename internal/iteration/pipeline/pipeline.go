@@ -228,6 +228,7 @@ func StartNewServerPipelineInternal(c *context.Context) ([]byte, error) {
 	return nil, nil
 }
 
+// deploy one server
 func StartDeployPipelineInternal(c *context.Context) ([]byte, error) {
 	pipelineId := c.ParamsInt64(":pipelineId")
 	actorName := c.Query("actorName")
@@ -238,10 +239,12 @@ func StartDeployPipelineInternal(c *context.Context) ([]byte, error) {
 	appOwner := c.Query("appOwner")
 	appName := c.Query("appName")
 	serverName := c.Query("serverName")
+	mode := c.Query("mode")
 	repoURL := db.GetApplicationRepoURLByOwnerAndRepo(appOwner, appName)
 	serverIP := db.GetServerIPByServerName(serverName)
 	avatarSrc,_ := db.GetUserAvatarByUserName(actorName)
 	envGroup, _ := db.GetOrGenerateIterationActGroup(iterId, env)
+
 
 	// reg pipeline
 	pipeExec := db.IterationAction{ActorName: actorName, PipeLineId: pipelineId, EnvGroup: envGroup, State: Init.ToString(),
@@ -252,19 +255,41 @@ func StartDeployPipelineInternal(c *context.Context) ([]byte, error) {
 	_, _ = db.InsertIterationAction(&pipeExec)
 	pipeline,_ := db.GetPipelineById(pipelineId)
 
-	runtimePipeline := FromIterationAction(pipeExec, *pipeline, &map[string]interface{}{
+	envMap := &map[string]interface{} {
 		"appOwner":appOwner,
 		"appName":appName,
 		"repoURL":repoURL,
 		"branchName": branchName,
 		"execPath": pipeExec.ExecPath,
 		"env":env,
-		"serverName": serverName,
-		"serverIP": serverIP,
 		"iterId": strconv.Itoa(int(iterId)),
 		"appPath":appName,
 		"pmdScanPath":fmt.Sprintf(PMD_SCAN_PATH, appName, "src"),
-	})
+	}
+
+	if mode == "single" {
+		(*envMap)["serverName"] = serverName
+		(*envMap)["serverIP"] = serverIP
+	} else if mode == "branch" {
+		if env == db.PRE_STATE.ToString() {
+			// deploy all pre server
+			servers, _ := db.GetServerByType(db.UNKNOWN.FromString(env))
+			var serverNames []string
+			var serverIPs []string
+			for _, server := range servers {
+				serverNames = append(serverNames, server.Name)
+				serverIPs = append(serverIPs, server.IP)
+			}
+			names, _ := json.Marshal(serverNames)
+			ips, _ := json.Marshal(serverIPs)
+			(*envMap)["serverName"] = string(names)
+			(*envMap)["serverIP"] = string(ips)
+		} else if env == db.GRAY_STATE.ToString() {
+			//
+		}
+	}
+
+	runtimePipeline := FromIterationAction(pipeExec, *pipeline, envMap)
 	_ = e.Reg(runtimePipeline)
 	return nil, nil
 }
@@ -688,6 +713,8 @@ func AdvanceIteration(c *context.Context) []byte {
 		if err != nil {
 			return []byte("error")
 		}
+	} else if nextState == db.PROD_STATE {
+
 	}
 
 
