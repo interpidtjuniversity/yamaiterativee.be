@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"yama.io/yamaIterativeE/internal/iteration/step/beanfactory"
 )
 
 func RunShellStep(name, execPath string, args ...string) (string, string, error) {
@@ -21,4 +22,12 @@ func RunShellStep(name, execPath string, args ...string) (string, string, error)
 	commend.Stderr = bufErr
 	err := commend.Run()
 	return bufOut.String(), bufErr.String(), err
+}
+
+func RunCodeStep(name string, args ...string) error {
+	bean := beanfactory.GetBean(name)
+	if bean == nil {
+		return fmt.Errorf("no such bean: %s", name)
+	}
+	return bean.Execute(args, nil)
 }

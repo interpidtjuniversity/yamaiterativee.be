@@ -8,6 +8,8 @@
 #pouch run -d --name ad7fe219bb8611eb9c0b_interpidtjuniversity.miniselfop.dev --net d2fd841db19011e JavaImage top -b
 #pouch run -d --name ad7fe219bb8611ebgrev_interpidtjuniversity.miniselfop.pre --net d2fd841db19011e JavaImage top -b
 #pouch run -d --name ad7xf679bb8611ebgrev_interpidtjuniversity.miniselfop.pre --net d2fd841db19011e JavaImage top -b
+#pouch run -d --name ad7xf679berge11ebgrev_interpidtjuniversity.miniselfop.prod --net d2fd841db19011e JavaImage top -b
+#pouch run -d --name g5d3gp79berge11ebgrev_interpidtjuniversity.miniselfop.prod --net d2fd841db19011e JavaImage top -b
 
 
 #
@@ -20,3 +22,29 @@
 #/bin/chmod 777 standalone-zipkin.sh
 #./standalone-zipkin.sh
 #exit
+
+
+#pouch stop GLOBAL_CONSUL
+#pouch stop GLOBAL_ZIPKIN
+#pouch stop 0edef0abb19f11eb9274_interpidtjuniversity.miniselfop.dev
+#pouch stop 24391683b27111eba6c5_interpidtjuniversity.miniselfop.dev
+#pouch stop 28d20b0fbad111eb943d_interpidtjuniversity.miniselfop.dev
+#pouch stop ad7fe219bb8611eb9c0b_interpidtjuniversity.miniselfop.dev
+#pouch stop ad7fe219bb8611ebgrev_interpidtjuniversity.miniselfop.pre
+#pouch stop ad7xf679bb8611ebgrev_interpidtjuniversity.miniselfop.pre
+#pouch stop ad7xf679berge11ebgrev_interpidtjuniversity.miniselfop.prod
+#pouch stop g5d3gp79berge11ebgrev_interpidtjuniversity.miniselfop.prod
+
+#pouch rm GLOBAL_CONSUL
+#pouch rm GLOBAL_ZIPKIN
+#pouch rm 0edef0abb19f11eb9274_interpidtjuniversity.miniselfop.dev
+#pouch rm 24391683b27111eba6c5_interpidtjuniversity.miniselfop.dev
+#pouch rm 28d20b0fbad111eb943d_interpidtjuniversity.miniselfop.dev
+#pouch rm ad7fe219bb8611eb9c0b_interpidtjuniversity.miniselfop.dev
+#pouch rm ad7fe219bb8611ebgrev_interpidtjuniversity.miniselfop.pre
+#pouch rm ad7xf679bb8611ebgrev_interpidtjuniversity.miniselfop.pre
+#pouch rm ad7xf679berge11ebgrev_interpidtjuniversity.miniselfop.prod
+#pouch rm g5d3gp79berge11ebgrev_interpidtjuniversity.miniselfop.prod
+#
+#pouch network remove GLOBAL_RESOURCE
+#pouch network remove d2fd841db19011e

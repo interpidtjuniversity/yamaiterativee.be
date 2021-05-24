@@ -22,7 +22,7 @@ func TestInsertServer(t *testing.T) {
 
 func TestReleaseServer(t *testing.T) {
 	NewEngine()
-	_,err := ReleaseServer("d3358ad5b08311ebb22f_interpidtjuniversity.init.dev")
+	_,err := DeleteServer("d3358ad5b08311ebb22f_interpidtjuniversity.init.dev")
 	assert.Nil(t, err)
 }
 

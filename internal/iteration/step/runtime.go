@@ -122,6 +122,7 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		commend := exec.CommandContext(ctx, t.Command, t.Args...)
 		commend.Dir = t.ExecPath
 		log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
+		defer log.Close()
 		commend.Stdout = log
 		commend.Stderr = log
 		err := commend.Run()
@@ -131,7 +132,8 @@ func (t *RuntimeStep) Run() (interface{}, error) {
 		return nil, err
 	} else if t.Type == "code" {
 		time.Sleep(time.Duration(5)*time.Second)
-		os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
+		log, _ := os.OpenFile(t.LogPath, os.O_CREATE|os.O_WRONLY, 0777)
+		defer log.Close()
 		bean := beanfactory.GetBean(t.Command)
 		t.transformArgs(t.Env)
 		t.Args = append(t.Args, t.LogPath)

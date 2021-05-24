@@ -32,7 +32,13 @@ func (*DeployBean) deploy(appName, execPath, serverName, serverIp string) error 
 	}
 
 	if executable != "" {
+		state := db.GetServerStateByName(serverName)
+		if state == db.RUNNING {
+			command.StopContainer(serverName)
+			command.StartAppInContainer(serverName, "top -b")
+		}
 		command.DeployAppInContainer(serverName, "/jdk1.8.0_281/bin/java", fmt.Sprintf("-jar /root/%s", executable))
+		db.UpdateServerAfterDeploy(serverName)
 	}
 	var counter int
 	var success bool

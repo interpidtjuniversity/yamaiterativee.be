@@ -45,7 +45,7 @@ func NewIteration(c *context.Context) []byte{
 	var newIterationFunc = func(session *db.ProxySession) (map[string]interface{}, error){
 		iteration := db.Iteration{IterCreator: creator, IterType: iterType, IterAdmin: admins, OwnerName: appOwner, RepoName: appName,
 			IterBranch: generateIterBranch(), IterState: -1, BaseCommit: baseCommit, Content: content, Title: util.GenerateRandomStringWithPrefix(10,"E"),
-			DevConfig: app.DevConfig, StableConfig: app.StableConfig, TestConfig: app.TestConfig, PreConfig: app.PreConfig, ProdConfig: app.ProdConfig,
+			DevConfig: app.DevConfig, StableConfig: app.StableConfig, TestConfig: app.TestConfig, PreConfig: app.PreConfig, ProdConfig: app.ProdConfig, GrayOrder: []string{},
 		}
 		// insert iteration
 		_, err := session.Session.Insert(&iteration)

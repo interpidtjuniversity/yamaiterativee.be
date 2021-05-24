@@ -112,7 +112,7 @@ type Server struct {
 	IterationId int64       `xorm:"iteration_id"`
 	DeployId    string      `xorm:"deploy_id"`
 	GroupId     string      `xorm:"group_id"`
-	ReleaseId   int64       `xorm:"release_id"`
+	ReleaseId   string      `xorm:"release_id"`
 }
 
 func InsertServer(server *Server) (bool, error) {
@@ -127,7 +127,16 @@ func InsertServer(server *Server) (bool, error) {
 	return true, nil
 }
 
-func ReleaseServer(name string) (bool, error) {
+func GetServerByName(name string) (*Server, error) {
+	server := new(Server)
+	exist,err := x.Table("server").Where(builder.Eq{"name": name}).Get(server)
+	if !exist || err!=nil {
+		return nil, err
+	}
+	return server, nil
+}
+
+func DeleteServer(name string) (bool, error) {
 	_,err := x.Table("server").Where(builder.Eq{"name": name}).Delete(new(Server))
 	if err!=nil {
 		return false, err
@@ -137,6 +146,15 @@ func ReleaseServer(name string) (bool, error) {
 
 func UpdateServerAfterApply(name, ip string) (bool, error) {
 	server := &Server{IP: ip, State: IDLE}
+	_, err := x.Table("server").Where(builder.Eq{"name": name}).Update(server)
+	if err!=nil {
+		return false, err
+	}
+	return true,nil
+}
+
+func UpdateServerAfterDeploy(name string) (bool, error) {
+	server := &Server{State: RUNNING}
 	_, err := x.Table("server").Where(builder.Eq{"name": name}).Update(server)
 	if err!=nil {
 		return false, err
@@ -238,4 +256,28 @@ func GetServerByType(serverType ServerType) ([]*Server, error) {
 	var servers []*Server
 	err := x.Table("server").Where(builder.Neq{"name":"", "ip":""}.And(builder.Eq{"type":serverType})).Find(&servers)
 	return servers, err
+}
+
+func GetApplicationProdServer(appOwner, appName string) ([]*Server, error) {
+	var servers []*Server
+	err := x.Table("server").Cols("name", "ip").Where(builder.Eq{"app_owner":appOwner, "app_name":appName,"type":PROD}).Find(&servers)
+	return servers, err
+}
+
+func GetServerStateByName(name string) ServerState {
+	server := new(Server)
+	exist, err := x.Table("server").Cols("state").Where(builder.Eq{"name":name}).Get(server)
+	if !exist || err != nil {
+		return -1
+	}
+	return server.State
+}
+
+func UpdateProdServerReleaseId(releaseId string) error {
+	if releaseId == "" {
+		return fmt.Errorf("release_id can not be empty")
+	}
+	server := &Server{ReleaseId: releaseId}
+	_, err := x.Table("server").Cols("release_id").Where(builder.Eq{"type":PROD}).Update(server)
+	return err
 }

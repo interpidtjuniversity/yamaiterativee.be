@@ -85,6 +85,9 @@ func ConstructTextLog(path string) []byte {
 func ConstructTestReport(execPath, appName string) []byte{
 	jacocoPath := fmt.Sprintf("%s/%s/target/site/jacoco/jacoco.csv", execPath, appName)
 	jacoco, _:= os.Open(jacocoPath)
+	if jacoco == nil {
+		return nil
+	}
 	defer jacoco.Close()
 	jacocoMap := make(map[string][]JacocoTestReport)
 

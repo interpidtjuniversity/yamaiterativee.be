@@ -12,6 +12,7 @@ func init() {
 	beanMap["serverReleaseBean"] = &bean.ServerReleaseBean{}
 	beanMap["branchDeployBean"] = &bean.BranchDeployBean{}
 	beanMap["branchCompileBean"] = &bean.BranchCompileBean{}
+	beanMap["rollBackBean"] = &bean.RollBackBean{}
 }
 
 func GetBean(beanName string) bean.Bean{

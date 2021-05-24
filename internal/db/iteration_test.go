@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -22,4 +23,12 @@ func Test_CreateIteration(t *testing.T) {
 		fmt.Print(err)
 	}
 
+}
+
+func Test_GetGrayOrder(t *testing.T) {
+	NewEngine()
+
+	iteration, err := GetIterationById(18)
+	assert.Nil(t, err)
+	fmt.Print(iteration.GrayOrder)
 }

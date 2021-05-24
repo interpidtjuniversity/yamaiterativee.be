@@ -48,13 +48,15 @@ func (cb *CompileBean) clone(repoPath, branchName, execPath, logPath string) err
 	if err := os.MkdirAll(execPath, os.ModePerm); err != nil {
 		return fmt.Errorf("error while execute git clone, err: %s", err)
 	}
-	log, _ := os.Open(logPath)
-	defer log.Close()
 
 	cmd := exec.Command("git", "clone", "-b", branchName, repoPath)
 	cmd.Dir = execPath
-	cmd.Stdout = log
-	cmd.Stderr = log
+	if logPath != "" {
+		log, _ := os.Open(logPath)
+		defer log.Close()
+		cmd.Stdout = log
+		cmd.Stderr = log
+	}
 	err := cmd.Run()
 
 	if err != nil {
@@ -110,12 +112,15 @@ func (cb *CompileBean) flushConfig(appName, execPath, serverEnv, serverName, ser
 }
 
 func (cb *CompileBean) mavenInstall(appName, execPath, logPath string) error {
-	log, _ := os.Open(logPath)
-	defer log.Close()
+
 	cmd := exec.Command("mvn", "install")
 	cmd.Dir = fmt.Sprintf("%s/%s", execPath, appName)
-	cmd.Stdout = log
-	cmd.Stderr = log
+	if logPath != "" {
+		log, _ := os.Open(logPath)
+		defer log.Close()
+		cmd.Stdout = log
+		cmd.Stderr = log
+	}
 	err := cmd.Run()
 
 	if err != nil {

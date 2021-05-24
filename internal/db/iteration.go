@@ -77,41 +77,48 @@ func (is IterationState) NextState() IterationState {
 }
 
 type Iteration struct {
-	ID              int64          `xorm:"id autoincr pk"`
-	IterCreator     string         `xorm:"iter_creator_uid"`
-	IterType        string         `xorm:"iter_type"`
-	IterAdmin       []string       `xorm:"iter_admin"`
-	IterState       IterationState `xorm:"iter_state"` // 0,1,2,3,4   -> dev,itg,pre,gray.prod
-	IterBranch      string         `xorm:"iter_branch"`
-	IterDevActGroup int64          `xorm:"iter_dev_act_group"`
-	IterPreActGroup int64          `xorm:"iter_pre_act_group"`
-	IterItgActGroup int64          `xorm:"iter_itg_act_group"`
-	OwnerName       string         `xorm:"owner_name"`
-	RepoName        string         `xorm:"repo_name"`
-	IterDevClc      float64        `xorm:"iter_dev_clc"`
-	IterItgClc      float64        `xorm:"iter_itg_clc"`
-	IterPreClc      float64        `xorm:"iter_pre_clc"`
-	IterDevQs       float64        `xorm:"iter_dev_qs"`
-	IterItgQs       float64        `xorm:"iter_itg_qs" `
-	IterPreQs       float64        `xorm:"iter_pre_qs"`
-	DevPr           int            `xorm:"dev_pr"`
-	ItgPr           int            `xorm:"itg_pr"`
-	PrePr           int            `xorm:"pre_pr"`
-	BaseCommit      string         `xorm:"base_commit"`
-	Title           string         `xorm:"title"`
-	Content         string         `xorm:"content"`
-	TestConfig      string         `xorm:"test_config"`
-	ProdConfig      string         `xorm:"prod_config"`
-	DevConfig       string         `xorm:"dev_config"`
-	PreConfig       string         `xorm:"pre_config"`
-	StableConfig    string         `xorm:"stable_config"`
+	ID                int64          `xorm:"id autoincr pk"`
+	IterCreator       string         `xorm:"iter_creator_uid"`
+	IterType          string         `xorm:"iter_type"`
+	IterAdmin         []string       `xorm:"iter_admin"`
+	IterState         IterationState `xorm:"iter_state"` // 0,1,2,3,4   -> dev,itg,pre,gray.prod
+	IterBranch        string         `xorm:"iter_branch"`
+	IterDevActGroup   int64          `xorm:"iter_dev_act_group"`
+	IterPreActGroup   int64          `xorm:"iter_pre_act_group"`
+	IterItgActGroup   int64          `xorm:"iter_itg_act_group"`
+	OwnerName         string         `xorm:"owner_name"`
+	RepoName          string         `xorm:"repo_name"`
+	IterDevClc        float64        `xorm:"iter_dev_clc"`
+	IterItgClc        float64        `xorm:"iter_itg_clc"`
+	IterPreClc        float64        `xorm:"iter_pre_clc"`
+	IterDevQs         float64        `xorm:"iter_dev_qs"`
+	IterItgQs         float64        `xorm:"iter_itg_qs" `
+	IterPreQs         float64        `xorm:"iter_pre_qs"`
+	DevPr             int            `xorm:"dev_pr"`
+	ItgPr             int            `xorm:"itg_pr"`
+	PrePr             int            `xorm:"pre_pr"`
+	BaseCommit        string         `xorm:"base_commit"`
+	Title             string         `xorm:"title"`
+	Content           string         `xorm:"content"`
+	TestConfig        string         `xorm:"test_config"`
+	ProdConfig        string         `xorm:"prod_config"`
+	DevConfig         string         `xorm:"dev_config"`
+	PreConfig         string         `xorm:"pre_config"`
+	StableConfig      string         `xorm:"stable_config"`
+	GrayPercent       string         `xorm:"gray_percent"`
+	GrayOrder         []string       `xorm:"gray_order"`
+	GrayAdvanceState  bool           `xorm:"gray_advance_state"`
+	GrayRollBackState bool           `xorm:"gray_rollback_state"`
 }
 
 func GetIterationById(id int64) (*Iteration, error){
 	iteration := &Iteration{}
-	has, _ := x.ID(id).Get(iteration)
-	if !has {
-		return nil, ErrIterationNotExist{Args: map[string]interface{}{"iterationId": id}}
+	exist, err := x.Table("iteration").Cols("id", "iter_creator_uid", "iter_type", "iter_admin","iter_state",
+		"iter_branch","iter_dev_act_group","iter_pre_act_group","iter_itg_act_group","owner_name","repo_name","iter_dev_clc",
+		"iter_itg_clc","iter_pre_clc","iter_dev_qs","iter_itg_qs","iter_pre_qs","dev_pr","itg_pr","pre_pr","base_commit",
+		"title","content","gray_percent","gray_order","gray_advance_state","gray_rollback_state").Where(builder.Eq{"id":id}).Get(iteration)
+	if !exist {
+		return nil, err
 	}
 	return iteration, nil
 }
@@ -244,6 +251,57 @@ func UpdateIterationPreActGroup(iterId, actGroupId int64) error{
 	iteration := Iteration{IterPreActGroup: actGroupId}
 	_, err := x.Table("iteration").Cols("iter_pre_act_group").Where(builder.Eq{"id":iterId}).Update(&iteration)
 	return err
+}
+
+func GetIterationGrayPercent(iterId int64) string {
+	iteration := Iteration{}
+	exist, err := x.Table("iteration").Cols("gray_percent").Where(builder.Eq{"id":iterId}).Get(&iteration)
+	if !exist || err!=nil {
+		return ""
+	}
+	return iteration.GrayPercent
+}
+
+func UpdateIterationAdvanceGrayInfo(iterId int64, grayOrder []string, grayPercent string, advanceState bool) error {
+	iteration := Iteration{GrayOrder: grayOrder, GrayPercent: grayPercent, GrayAdvanceState: advanceState}
+	_, err := x.Table("iteration").Cols("gray_order", "gray_percent","gray_advance_state").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+
+func UpdateIterationAdvanceState(iterId int64, advanceState bool) error {
+	iteration := Iteration{GrayAdvanceState: advanceState}
+	_, err := x.Table("iteration").Cols("gray_advance_state").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+
+func UpdateIterationRollBackGrayInfo(iterId int64, grayOrder []string, grayPercent string, rollBackState bool) error {
+	iteration := Iteration{GrayOrder: grayOrder, GrayPercent: grayPercent, GrayRollBackState: rollBackState}
+	_, err := x.Table("iteration").Cols("gray_order", "gray_percent","gray_rollback_state").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+
+func UpdateIterationRollBackState(iterId int64, rollBackState bool) error {
+	iteration := Iteration{GrayRollBackState: rollBackState}
+	_, err := x.Table("iteration").Cols("gray_rollback_state").Where(builder.Eq{"id":iterId}).Update(&iteration)
+	return err
+}
+
+func GetIterationAdvanceGrayState(iterId int64) (string, bool) {
+	iteration := Iteration{}
+	exist, err := x.Table("iteration").Cols("gray_percent", "gray_advance_state").Where(builder.Eq{"id":iterId}).Get(&iteration)
+	if !exist || err != nil {
+		return "0", false
+	}
+	return iteration.GrayPercent, iteration.GrayAdvanceState
+}
+
+func GetIterationRollBackGrayState(iterId int64) (string, bool) {
+	iteration := Iteration{}
+	exist, err := x.Table("iteration").Cols("gray_percent", "gray_rollback_state").Where(builder.Eq{"id":iterId}).Get(&iteration)
+	if !exist || err != nil {
+		return "0", false
+	}
+	return iteration.GrayPercent, iteration.GrayRollBackState
 }
 
 type ErrIterationNotExist struct {
