@@ -15,6 +15,62 @@ import (
 	"yama.io/yamaIterativeE/internal/util"
 )
 
+type ApplicationData struct {
+	Id              int64        `json:"applicationId"`
+	Name            string       `json:"applicationName"`
+	Repo            string       `json:"repository"`
+	Members         []MemberData `json:"members"`
+	Owner           string       `json:"owner"`
+	Icon            string       `json:"icon"`
+	LatestIteration int64        `json:"latestIteration"`
+}
+
+type MemberData struct {
+	Name string `json:"name"`
+	URL  string `json:"url"`
+}
+
+func GetUserAllApplication(c *context.Context) []byte {
+	userName := c.Params("username")
+	apps := db.GetApplicationByUser(userName)
+	// agg user
+	userQueryMap := make(map[string]bool)
+	userMap := make(map[string]*db.User)
+	var userNames []string
+	for _,app := range apps{
+		for _, user := range app.Users {
+			userQueryMap[user] = true
+		}
+	}
+	for user, _ := range userQueryMap {
+		userNames = append(userNames, user)
+	}
+	users,_ := db.BranchQueryUserByName(userNames)
+	for _, user := range users{
+		userMap[user.Name] = user
+	}
+	var applicationDatas []ApplicationData
+	for _, app := range apps {
+		applicationData := ApplicationData{
+			Id: app.ID,
+			Name: app.AppName,
+			Repo: app.RepoUrl,
+			Owner: app.Owner,
+			Icon: app.AvatarURL,
+			LatestIteration: app.LatestIteration,
+		}
+		var members []MemberData
+		for _, user := range app.Users {
+			members = append(members, MemberData{user, userMap[user].Avatar})
+		}
+		applicationData.Members = members
+		applicationDatas = append(applicationDatas, applicationData)
+	}
+
+	data, _ := json.Marshal(applicationDatas)
+	return data
+}
+
 func GetAllUsers(c *context.Context) []byte{
 	names, _ := db.GetAllUser()
 	data, _ := json.Marshal(names)

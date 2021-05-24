@@ -42,3 +42,9 @@ func TestInvokeMerge2BranchService(t *testing.T) {
 	assert.Nil(t, err)
 	assert.True(t, response)
 }
+
+func TestInvokeQueryMasterLatestCommitIdService2(t *testing.T) {
+	response, err := InvokeQueryMasterLatestCommitIdService("interpidtjuniversity","miniselfop")
+	assert.Nil(t, err)
+	fmt.Print(response)
+}

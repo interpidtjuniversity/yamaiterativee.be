@@ -115,6 +115,9 @@ func runWeb(c *cli.Context) error {
 					m.Post("/all", application.GetAppAllBranch)
 					m.Post("/all/white", application.GetAppAllWhiteBranch)
 				})
+				m.Group("/user/:username", func() {
+					m.Get("/all", application.GetUserAllApplication)
+				})
 			})
 
 			m.Group("/iterations", func() {

@@ -149,7 +149,7 @@ func GetIterationByAdmin(adminId string) []*Iteration {
 			}
 		}
 	}
-	x.Table("iteration").Where(builder.In("id", filterIterIds)).Find(&filterIters)
+	x.Table("iteration").Cols("id","iter_admin","title","owner_name","repo_name","iter_state","content","iter_creator_uid").Where(builder.In("id", filterIterIds)).Find(&filterIters)
 	return filterIters
 }
 

@@ -35,17 +35,12 @@ type Application struct {
 	ApplicationBusinessDomain string   `xorm:"app_businessDomain"`
 	ApplicationDomainName     string   `xorm:"app_domain"`
 	Description               string   `xorm:"description"`
+	LatestIteration           int64    `xorm:"latest_iterId"`
 }
 
 func InsertApplication(application *Application) error{
 	_, err := x.Table("application").Insert(application)
 	return err
-}
-
-func GetApplicationByUser(owner string) ([]*Application, error) {
-	var applications []*Application
-	err := x.Table("application").Where(builder.Eq{"owner": owner}).Find(&applications)
-	return applications, err
 }
 
 func GetApplicationByParticipant(user string) ([]*Application, error) {
@@ -113,6 +108,23 @@ func GetApplicationConfigByOwnerAndRepo(owner, app string) (*Application, error)
 		return nil, err
 	}
 	return application,nil
+}
+
+func GetApplicationByUser(userName string) []*Application {
+	var allApplications []*Application
+	var filterAppIds []int64
+	var filterApplications []*Application
+	x.Table("application").Cols("id", "users").Find(&allApplications)
+	for _, app := range allApplications {
+		for _, user := range app.Users {
+			if userName == user {
+				filterAppIds = append(filterAppIds, app.ID)
+				break
+			}
+		}
+	}
+	x.Table("application").Cols("id","app_name", "repo_url", "owner", "users", "avatar", "latest_iterId").Where(builder.In("id", filterAppIds)).Find(&filterApplications)
+	return filterApplications
 }
 
 func GetApplicationDevConfig(owner, app string) string {
