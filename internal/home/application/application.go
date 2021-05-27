@@ -164,8 +164,10 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 		newApplication.RepoUrl = appImportRepoUrl
 	}
 	// 4. set up database
-	if err := buildUpApplicationDataBase(&newApplication); err!=nil {
-		return []byte(fmt.Errorf("error while buildup application database, err %s", err).Error())
+	if newApplication.ApplicationDataBase != "" {
+		if err := buildUpApplicationDataBase(&newApplication); err != nil {
+			return []byte(fmt.Errorf("error while buildup application database, err %s", err).Error())
+		}
 	}
 	// 3. set up domain
 	if err := buildUpApplicationDomain(&newApplication); err!=nil {
