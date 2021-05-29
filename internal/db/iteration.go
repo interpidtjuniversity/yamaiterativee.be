@@ -136,10 +136,11 @@ func UpdateIteration(iteration Iteration) error {
 	return err
 }
 
-func GetIterationByAdmin(adminId string) []*Iteration {
+func GetIterationByAdmin(adminId string, limit int) ([]*Iteration, error) {
 	var allIterations []*Iteration
 	var filterIterIds []int64
 	var filterIters []*Iteration
+	var err error
 	x.Table("iteration").Cols("id","iter_admin").Find(&allIterations)
 	for _, iter := range allIterations {
 		for _, admin := range iter.IterAdmin {
@@ -149,8 +150,12 @@ func GetIterationByAdmin(adminId string) []*Iteration {
 			}
 		}
 	}
-	x.Table("iteration").Cols("id","iter_admin","title","owner_name","repo_name","iter_state","content","iter_creator_uid").Where(builder.In("id", filterIterIds)).Find(&filterIters)
-	return filterIters
+	if limit >= 0{
+		err = x.Table("iteration").Cols("id", "iter_admin", "title", "owner_name", "repo_name", "iter_state", "content", "iter_creator_uid").Where(builder.In("id", filterIterIds)).Desc("id").Limit(limit).Find(&filterIters)
+	} else {
+		err = x.Table("iteration").Cols("id", "iter_admin", "title", "owner_name", "repo_name", "iter_state", "content", "iter_creator_uid").Where(builder.In("id", filterIterIds)).Find(&filterIters)
+	}
+	return filterIters, err
 }
 
 func GetIterationConfigByIterId(iterId int64) (*Iteration, error) {
@@ -302,6 +307,16 @@ func GetIterationRollBackGrayState(iterId int64) (string, bool) {
 		return "0", false
 	}
 	return iteration.GrayPercent, iteration.GrayRollBackState
+}
+
+func BranchQueryIterationByEnvGroup(groups []int64) ([]*Iteration, error) {
+	var iterations []*Iteration
+	err := x.Table("iteration").Cols("id", "iter_dev_act_group", "iter_itg_act_group", "iter_pre_act_group", "content").Where(
+		builder.In("iter_dev_act_group", groups).Or(
+			builder.In("iter_itg_act_group", groups)).Or(
+				builder.In("iter_pre_act_group", groups))).Find(&iterations)
+
+	return iterations, err
 }
 
 type ErrIterationNotExist struct {

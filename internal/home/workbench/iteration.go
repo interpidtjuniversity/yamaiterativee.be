@@ -8,6 +8,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
+	"yama.io/yamaIterativeE/internal/home/workbench/datafetcher"
 	"yama.io/yamaIterativeE/internal/util"
 )
 
@@ -90,6 +91,22 @@ func NewIteration(c *context.Context) []byte{
 	return []byte("success")
 }
 
+func GetWorkBenchUserData(c *context.Context) ([]byte, error) {
+	level1Key := c.Query("level1Key")
+	level2Key := c.Query("level2Key")
+	userName := c.Query("userName")
+	limit := c.QueryInt("limit")
+
+	var fetcher datafetcher.Fetcher
+	if level1Key != "" && level2Key != "" {
+		fetcher = datafetcher.GetFetcher(level1Key, level2Key)
+	} else if level1Key != "" && level2Key == "" {
+		fetcher = datafetcher.GetFetcher(level1Key)
+	} else {
+		fetcher = datafetcher.GetFetcher("default")
+	}
+	return fetcher.Fetch(userName, limit)
+}
 
 func generateIterBranch() string {
 	y,m,d := time.Now().Date()

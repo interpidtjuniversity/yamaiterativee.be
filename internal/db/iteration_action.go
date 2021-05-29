@@ -46,6 +46,18 @@ func UpdateIterationAction(id int64, state string) error {
 	return err
 }
 
+func GetIterActionByUserName(userName string, limit int) ([]*IterationAction, error){
+	var actions []*IterationAction
+	err := x.Table("iteration_action").Where(builder.Eq{"actor_name": userName}).Desc("id").Limit(limit).Find(&actions)
+	return actions, err
+}
+
+func GetIterActionByUserNameAndPipelineId(userName string, pipelineId int64, limit int) ([]*IterationAction, error){
+	var actions []*IterationAction
+	err := x.Table("iteration_action").Where(builder.Eq{"actor_name": userName, "pipeline_id": pipelineId}).Desc("id").Limit(limit).Find(&actions)
+	return actions, err
+}
+
 type IterationMergeRequest struct {
 	IterationAction
 	SponsorPassId []int64  `xorm:"sponsor_pass_id" json:"-"`

@@ -99,6 +99,7 @@ func runWeb(c *cli.Context) error {
 					m.Get("/ownerrepos/:ownerName", workbench.GetOwnerApplications)
 					m.Post("/new", workbench.NewIteration)
 				})
+				m.Post("/userdata", workbench.GetWorkBenchUserData)
 			})
 
 			m.Group("/application", func() {
@@ -183,6 +184,8 @@ func runWeb(c *cli.Context) error {
 		})
 
 		m.Group("/iteration", func() {
+			m.Post("/useriterationaction", pipeline.GetUserLatestIterationAction)
+
 			m.Group("/:iterationId", func() {
 				m.Get("/info", env.IterInfo)
 				m.Group("/envType", func() {

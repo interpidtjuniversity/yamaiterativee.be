@@ -51,7 +51,7 @@ var iterationColorMap = map[string]string{
 func GetUserAllIterations(context *context.Context) []byte {
 	username := context.Params(":username")
 	// get this user all iterations
-	iters := db.GetIterationByAdmin(username)
+	iters, _ := db.GetIterationByAdmin(username, -1)
 	// agg user
 	userQueryMap := make(map[string]bool)
 	userMap := make(map[string]*db.User)

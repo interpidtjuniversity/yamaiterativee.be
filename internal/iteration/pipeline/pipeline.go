@@ -91,24 +91,30 @@ func (ep EndpointPosition)String(id int) string{
 }
 
 type pipelineInfo struct {
-	PipelineId  int64        `json:"pipelineId"`
-	AvatarSrc   string       `json:"avatarSrc"`
-	ActionInfo  string       `json:"actionInfo"`
-	ExtInfo     string       `json:"extInfo"`
-	Nodes       []stage.Node `json:"nodes"`
-	Edges       []edge       `json:"edges"`
-	Groups      []group      `json:"groups"`
-	State       string       `json:"state"`
-	IterationId int64        `json:"iterationId"`
+	PipelineId       int64        `json:"pipelineId"`
+	AvatarSrc        string       `json:"avatarSrc"`
+	ActionInfo       string       `json:"actionInfo"`
+	ExtInfo          string       `json:"extInfo"`
+	Nodes            []stage.Node `json:"nodes"`
+	Edges            []edge       `json:"edges"`
+	Groups           []group      `json:"groups"`
+	State            string       `json:"state"`
+	IterationId      int64        `json:"iterationId"`
+	IterationContent string       `json:"iterationContent"`
+	PipelineName     string       `json:"pipelineName"`
+	ActionId         int64        `json:"actionId"`
 }
 
 func (pi pipelineInfo)Clone() pipelineInfo  {
 	clone := pipelineInfo{}
 	clone.PipelineId = pi.PipelineId
 	clone.AvatarSrc = pi.AvatarSrc
+	clone.PipelineName = pi.PipelineName
+	clone.IterationContent = pi.IterationContent
 	clone.ActionInfo = pi.ActionInfo
 	clone.State = pi.State
 	clone.IterationId = pi.IterationId
+	clone.ActionId = pi.ActionId
 	clone.Nodes = make([]stage.Node, len(pi.Nodes))
 	clone.Edges = make([]edge, len(pi.Edges))
 	clone.Groups = make([]group, len(pi.Groups))
@@ -466,13 +472,36 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 	}
 
 	envActions, err := db.GetIterActionByActGroup(envGroup)
+	data, _ := drawPipeline(envActions)
+	return data, err
+}
+
+func GetUserLatestIterationAction(c *context.Context) ([]byte, error) {
+	// actorName
+	actorName := c.Query("actorName")
+	limit := c.QueryInt("limit")
+	userActions ,err := db.GetIterActionByUserName(actorName, limit)
+
+	data, _ := drawPipeline(userActions)
+
+	return data, err
+}
+
+func drawPipeline(actions []*db.IterationAction) ([]byte, error) {
 	pipelineInfoMap := make(map[int64]pipelineInfo)
-	stream, _ := util.New(envActions)
+	pipelineMap := make(map[int64]*db.Pipeline)
+	iterationMap := make(map[int64]*db.Iteration)
+	stream, _ := util.New(actions)
 	var pipelineIds []int64
+	var pipelineEnvs []int64
 	_ = stream.Map(func(action *db.IterationAction) int64{
 		return action.PipeLineId
 	}).ToSlice(&pipelineIds)
+	for _, action := range actions {
+		pipelineEnvs = append(pipelineEnvs, action.EnvGroup)
+	}
 	pipelines, _ := db.BranchQueryPipelineByIds(pipelineIds)
+	iterations, _ := db.BranchQueryIterationByEnvGroup(pipelineEnvs)
 	// agg build
 	for _,p := range pipelines {
 		// 1.parse endpoint and edge
@@ -485,6 +514,18 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 		pli := pipelineInfo{Nodes: nodes, Edges: edges, Groups: groups}
 		// 5.save result
 		pipelineInfoMap[p.ID] = pli
+		pipelineMap[p.ID] = p
+	}
+	for _, i := range iterations {
+		if i.IterDevActGroup > 0 {
+			iterationMap[i.IterDevActGroup] = i
+		}
+		if i.IterItgActGroup > 0{
+			iterationMap[i.IterItgActGroup] = i
+		}
+		if i.IterPreActGroup > 0{
+			iterationMap[i.IterPreActGroup] = i
+		}
 	}
 	// agg actId and stageId
 	var actionIds []int64
@@ -535,12 +576,15 @@ func IterPipelineInfo(c *context.Context) ([]byte,error) {
 			pipelineInfoTemplate.Nodes[i].ActionIdStageId = fmt.Sprintf("%d_%d", (*action).Id, pipelineInfoTemplate.Nodes[i].StageId)
 			pipelineInfoTemplate.Nodes[i].State = filterStateMap[fmt.Sprintf("%d-%d", pipelineInfoTemplate.Nodes[i].ActionId, pipelineInfoTemplate.Nodes[i].StageId)]
 		}
-		pipelineInfoTemplate.PipelineId=action.Id
+		pipelineInfoTemplate.PipelineId=action.PipeLineId
 		pipelineInfoTemplate.ActionInfo=action.ActionInfo
 		pipelineInfoTemplate.AvatarSrc=action.AvatarSrc
 		pipelineInfoTemplate.ExtInfo=action.ExtInfo
 		pipelineInfoTemplate.State = action.State
-		pipelineInfoTemplate.IterationId = iterationId
+		pipelineInfoTemplate.PipelineName = pipelineMap[action.PipeLineId].Name
+		pipelineInfoTemplate.IterationId = iterationMap[action.EnvGroup].ID
+		pipelineInfoTemplate.IterationContent = iterationMap[action.EnvGroup].Content
+		pipelineInfoTemplate.ActionId = action.Id
 		// only one group exist so we get index of 0
 		pipelineInfoTemplate.Groups[0].Options.Title = action.ActionGroupInfo
 
