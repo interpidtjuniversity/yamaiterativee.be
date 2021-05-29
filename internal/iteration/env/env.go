@@ -6,6 +6,7 @@ import (
 	"yama.io/yamaIterativeE/internal/context"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/grpc/invoke/invokerImpl"
+	"yama.io/yamaIterativeE/internal/iteration/step/log"
 )
 
 //1. const info for each step in each iteration
@@ -134,6 +135,64 @@ func IterInfo(c *context.Context) []byte {
 	data, _ := json.Marshal(info)
 	return data
 
+}
+
+
+func SyncInfo(c *context.Context) ([]byte, error) {
+	iterationId := c.ParamsInt64(":iterationId")
+	envType := c.ParamsEscape(":envType")
+	syncKey := c.Query("syncKey")
+	appName := c.Query("appName")
+
+	var actionIds []int64
+	group, _ := db.GetIterationActGroupByIterationIdAndEnv(iterationId, envType)
+	actions, _ := db.LightlyGetIterActionByActGroup(group.ID)
+	for _, action := range actions {
+		actionIds = append(actionIds, action.Id)
+	}
+	stageExec, _ := db.GetIterationEnvLatestSuccessStageExec(actionIds, []int64{7,18})
+	report := log.ConstructTestReport(stageExec.ExecPath, appName)
+	reportLog := log.Log{}
+	json.Unmarshal(report, &reportLog)
+
+	var result = 0.0
+	if reportLog.Data != nil {
+		var partIndex, allIndex = 0.0, 0.0
+		if syncKey == "qualityScore" {
+			for _, v := range (reportLog.Data).(map[string]interface{}) {
+				for _, vI := range v.([]interface{}) {
+					vv := vI.(map[string]interface{})
+					//var part = vv.BranchCovered + vv.LineCovered + vv.InstructionCovered + vv.ComplexityCovered + vv.MethodCovered
+					var part = vv["branchCovered"].(float64) + vv["complexityCovered"].(float64) + vv["instructionCovered"].(float64) + vv["lineCovered"].(float64) + vv["methodCovered"].(float64)
+					var all = part + vv["branchMissed"].(float64) + vv["complexityMissed"].(float64) + vv["instructionMissed"].(float64) + vv["lineMissed"].(float64) + vv["methodMissed"].(float64)
+					//var all = part + vv.MethodMissed + vv.LineMissed + vv.InstructionMissed + vv.ComplexityMissed + vv.BranchMissed
+					partIndex += part
+					allIndex += all
+				}
+			}
+			result = partIndex / allIndex * 100
+			//result = float64(partIndex) / float64(allIndex) *100
+			db.UpdateIterationEnvQualityScore(iterationId, envType, result)
+		} else if syncKey == "lineCoverage" {
+			for _, v := range (reportLog.Data).(map[string]interface{}) {
+				for _, vI := range v.([]interface{}) {
+					vv := vI.(map[string]interface{})
+					var part = vv["lineCovered"].(float64)
+					var all = part + vv["lineMissed"].(float64)
+					//var part = vv.LineCovered
+					//var all  = part + vv.LineMissed
+					partIndex += part
+					allIndex += all
+				}
+			}
+			result = partIndex / allIndex
+			//result = float64(partIndex) / float64(allIndex)
+			db.UpdateIterationEnvLineCoverage(iterationId, envType, result)
+			result *= 100
+		}
+	}
+	data, _ := json.Marshal(int(result))
+	return data, nil
 }
 
 

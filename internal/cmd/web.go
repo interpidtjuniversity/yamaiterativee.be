@@ -192,6 +192,7 @@ func runWeb(c *cli.Context) error {
 					m.Group("/:envType", func() {
 						m.Get("", pipeline.IterPipelineInfo)
 						m.Get("/info", env.IterEnvInfo)
+						m.Post("/syncinfo", env.SyncInfo)
 					})
 				})
 				m.Group("/action", func() {

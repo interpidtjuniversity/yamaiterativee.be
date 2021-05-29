@@ -319,6 +319,48 @@ func BranchQueryIterationByEnvGroup(groups []int64) ([]*Iteration, error) {
 	return iterations, err
 }
 
+func UpdateIterationEnvQualityScore (iterId int64, env string, qs float64) {
+	iteration := Iteration{}
+	var column string
+	switch env {
+	case "dev":
+		iteration.IterDevQs = qs
+		column = "iter_dev_qs"
+		break
+	case "itg":
+		iteration.IterItgQs = qs
+		column = "iter_itg_qs"
+		break
+	case "pre":
+		iteration.IterPreQs = qs
+		column = "iter_pre_qs"
+	default:
+		return
+	}
+	x.Table("iteration").Cols(column).Where(builder.Eq{"id": iterId}).Update(&iteration)
+}
+
+func UpdateIterationEnvLineCoverage (iterId int64, env string, clc float64) {
+	iteration := Iteration{}
+	var column string
+	switch env {
+	case "dev":
+		iteration.IterDevClc = clc
+		column = "iter_dev_clc"
+		break
+	case "itg":
+		iteration.IterItgClc = clc
+		column = "iter_itg_clc"
+		break
+	case "pre":
+		iteration.IterPreClc = clc
+		column = "iter_pre_clc"
+	default:
+		return
+	}
+	x.Table("iteration").Cols(column).Where(builder.Eq{"id": iterId}).Update(&iteration)
+}
+
 type ErrIterationNotExist struct {
 	Args map[string]interface{}
 }

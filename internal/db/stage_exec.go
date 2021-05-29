@@ -73,3 +73,9 @@ func GetStageExecIdByActIdAndStageId(actionId, stageId int64) (int64, error) {
 	}
 	return stageExec.Id, nil
 }
+
+func GetIterationEnvLatestSuccessStageExec(actionIds []int64, stageIds []int64) (*StageExec, error) {
+	stageExec := new(StageExec)
+	_, err := x.Table("stage_exec").Where(builder.Eq{"state": "Finish"}.And(builder.In("act_id", actionIds)).And(builder.In("stage_id", stageIds))).Desc("id").Limit(1).Get(stageExec)
+	return stageExec, err
+}

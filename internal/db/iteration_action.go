@@ -27,6 +27,15 @@ func GetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
 	return actions, nil
 }
 
+func LightlyGetIterActionByActGroup(actGroupId int64) ([]*IterationAction, error) {
+	var actions []*IterationAction
+	err := x.Cols("id", "actor_name", "finally_pass", "pipeline_id").Where(builder.Eq{"env_group": actGroupId}).Find(&actions)
+	if err!=nil {
+		return nil, err
+	}
+	return actions, nil
+}
+
 func GetIterActionById (actionId int64) (*IterationAction, error) {
 	iterationAction := &IterationAction{}
 	has, err := x.ID(actionId).Get(iterationAction)
