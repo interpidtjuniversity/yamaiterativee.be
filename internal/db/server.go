@@ -273,11 +273,11 @@ func GetServerStateByName(name string) ServerState {
 	return server.State
 }
 
-func UpdateProdServerReleaseId(releaseId string) error {
+func UpdateProdServerReleaseId(appOwner, appName, releaseId string) error {
 	if releaseId == "" {
 		return fmt.Errorf("release_id can not be empty")
 	}
 	server := &Server{ReleaseId: releaseId}
-	_, err := x.Table("server").Cols("release_id").Where(builder.Eq{"type":PROD}).Update(server)
+	_, err := x.Table("server").Cols("release_id").Where(builder.Eq{"app_owner":appOwner, "appName": appName, "type":PROD}).Update(server)
 	return err
 }

@@ -281,7 +281,7 @@ func AdvanceIteration(c *context.Context) []byte {
 		}
 		// 2. get master commit add update prod server release_id
 		masterCommitId, _ := invokerImpl.InvokeQueryMasterLatestCommitIdService(iteration.OwnerName, iteration.RepoName)
-		db.UpdateProdServerReleaseId(masterCommitId)
+		db.UpdateProdServerReleaseId(iteration.OwnerName, iteration.RepoName, masterCommitId)
 		// 3. jar it to version repository
 	}
 
@@ -368,6 +368,7 @@ func AdvanceGray(c *context.Context) []byte {
 	err := step.RunCodeStep("compileBean", iteration.OwnerName, iteration.RepoName, repo, "master", execPath,
 		"prod", newGrayName, newGrayIP, strconv.Itoa(int(iterId)), "")
 	if err!=nil {
+		db.UpdateIterationAdvanceState(iterId, false)
 		return []byte("error")
 	}
 	err = step.RunCodeStep("deployBean", iteration.RepoName, execPath, newGrayName, newGrayIP)
@@ -375,10 +376,11 @@ func AdvanceGray(c *context.Context) []byte {
 	// and then
 	grayOrder = append(grayOrder, newGrayName)
 	newPercent := float64(len(grayOrder))/float64(len(prodServer))
-	db.UpdateIterationAdvanceGrayInfo(iterId, grayOrder, strconv.Itoa(int(newPercent*100)), false)
 	if err!=nil {
+		db.UpdateIterationAdvanceState(iterId, false)
 		return []byte("error")
 	}
+	db.UpdateIterationAdvanceGrayInfo(iterId, grayOrder, strconv.Itoa(int(newPercent*100)), false)
 
 	return []byte("success")
 }
@@ -403,10 +405,11 @@ func RollBackGray(c *context.Context) []byte {
 	err := step.RunCodeStep("rollBackBean", iteration.OwnerName, iteration.RepoName, repo, "master", fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(20,"")),
 		"prod", rollBackServerName, rollBackServer.IP, strconv.Itoa(int(iterId)), rollBackServer.ReleaseId, "")
 
-	db.UpdateIterationRollBackGrayInfo(iterId, iteration.GrayOrder[:grayServerNums-1], strconv.Itoa(int(newPercent*100)),false)
 	if err!=nil {
+		db.UpdateIterationRollBackState(iterId, false)
 		return []byte("error")
 	}
+	db.UpdateIterationRollBackGrayInfo(iterId, iteration.GrayOrder[:grayServerNums-1], strconv.Itoa(int(newPercent*100)),false)
 
 	return nil
 
