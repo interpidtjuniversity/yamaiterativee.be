@@ -12,9 +12,16 @@ import (
 	"yama.io/yamaIterativeE/internal/resource"
 )
 
+const (
+	DEFAULT_GROUP = "NONE_GROUP"
+	DEFAULT_TYPE = "NONE_TYPE"
+
+)
+
 var consul = &Consul{}
 var req = RequestContext{}
 var EnvInvokeMap = map[string]string{
+	DEFAULT_TYPE: "dev",
 	"dev": "stable",
 	"stable": "stable",
 	"test": "test",
@@ -68,10 +75,11 @@ func GetServiceInstances(ctx *macaron.Context) ([]byte, error) {
 	serverServiceName := strings.ReplaceAll(req.Service, "-", ".")
 	requestServerIP, _ := getIPAddress(ctx.Req)
 
-	// requestServerType, requestServerGroupId, _ := db.GetServerTypeAndGroupByIP(requestServerIP)
-	requestServerType, requestServerGroupId := "dev", int64(17)
+	requestServerType, requestServerGroupId, _ := db.GetServerTypeAndGroupByIP(requestServerIP)
+	// requestServerType, requestServerGroupId := "dev", int64(17)
 	if requestServerType == "" {
-		return nil, fmt.Errorf("invild remove host, host: %s", requestServerIP)
+		requestServerGroupId = DEFAULT_GROUP
+		requestServerType = DEFAULT_TYPE
 	}
 	// 1. if group exist
 	groupServers, _ := db.GetSameGroupServerByGroupIdAndServiceName(requestServerGroupId, req.Service)

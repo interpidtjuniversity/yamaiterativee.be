@@ -199,7 +199,7 @@ func GetServerTypeAndGroupByIP(ip string) (string, string, error) {
 	return array[len(array)-1], server.GroupId, nil
 }
 
-func GetSameGroupServerByGroupIdAndServiceName(groupId int64, serviceName string) ([]*Server, error) {
+func GetSameGroupServerByGroupIdAndServiceName(groupId string, serviceName string) ([]*Server, error) {
 	var servers []*Server
 	serviceName = strings.ReplaceAll(serviceName, "-", ".")
 	err := x.Table("server").Cols("name", "ip").Where(builder.Eq{"group_id":groupId}.And(builder.Eq{"state": RUNNING}).And(builder.Like{"name", fmt.Sprintf("%s%s%s", "%", serviceName, "%")})).Find(&servers)

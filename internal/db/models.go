@@ -68,7 +68,9 @@ func getEngine() (*xorm.Engine, error) {
 	default:
 		return nil, fmt.Errorf("unknown database type: %s", conf.Database.Type)
 	}
-	return xorm.NewEngine(conf.Database.Type, connStr)
+	engine, err := xorm.NewEngine(conf.Database.Type, connStr)
+	SetCache(engine)
+	return engine, err
 }
 
 func SetEngine() (*gorm.DB, error) {
@@ -87,6 +89,15 @@ func SetEngine() (*gorm.DB, error) {
 	x.ShowSQL(true)
 
 	return Init()
+}
+
+func SetCache(engine *xorm.Engine) {
+	cache := xorm.NewLRUCacher2(xorm.NewMemoryStore(), 60*time.Second, 500)
+	engine.MapCacher(new(Pipeline), cache)
+	engine.MapCacher(new(Stage), cache)
+	engine.MapCacher(new(Step), cache)
+	engine.MapCacher(new(PMD), cache)
+	engine.MapCacher(new(User), cache)
 }
 
 func NewEngine() (err error) {
