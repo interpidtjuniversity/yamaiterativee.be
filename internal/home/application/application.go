@@ -169,6 +169,10 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 			return []byte(fmt.Errorf("error while buildup application database, err %s", err).Error())
 		}
 	}
+	// 5. set up config
+	if err := buildUpApplicationConfigWithDataBaseType(&newApplication, configBytes, appDataBase); err!=nil {
+		return []byte(fmt.Errorf("error while buildup application config, err %s", err).Error())
+	}
 	// 3. set up domain
 	if err := buildUpApplicationDomain(&newApplication); err!=nil {
 		return []byte(fmt.Errorf("error while buildup application domain, err %s", err).Error())
@@ -180,10 +184,6 @@ func NewApplication(c *context.Context, form form.Application) []byte {
 	}
 	newApplication.NetWorkIP = network.IPRange
 	newApplication.NetWorkName = network.NetWorkName
-	// 5. set up config
-	if err := buildUpApplicationConfigWithDataBaseType(&newApplication, configBytes, appDataBase); err!=nil {
-		return []byte(fmt.Errorf("error while buildup application config, err %s", err).Error())
-	}
 	// 6. db insert
 	if err := db.InsertApplication(&newApplication); err!=nil {
 		return []byte(fmt.Errorf("error while insert application domain, err %s", err).Error())

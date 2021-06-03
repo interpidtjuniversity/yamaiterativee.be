@@ -83,7 +83,7 @@ func InitResource() {
 
 func initGlobalMysql(ip string) {
 	connStr := fmt.Sprintf("%s:%s@tcp(%s)/%s%scharset=utf8mb4&parseTime=true",
-		"root", "123456", ip, "test", "?")
+		"yamaiterativee", "Cy19991116", ip, "test", "?")
 	var engineParams = map[string]string{"rowFormat": "DYNAMIC"}
 	GLOBAL_MYSQL_ENGINE, _ = xorm.NewEngineWithParams("mysql", connStr, engineParams)
 }

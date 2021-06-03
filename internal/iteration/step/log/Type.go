@@ -84,6 +84,7 @@ func ConstructTextLog(path string) []byte {
 
 func ConstructTestReport(execPath, appName string) []byte{
 	jacocoPath := fmt.Sprintf("%s/%s/target/site/jacoco/jacoco.csv", execPath, appName)
+	//jacocoPath := fmt.Sprintf("/root/yamaHub/yamaHubTest/%s/test/target/site/jacoco-aggregate/jacoco.csv", appName)
 	jacoco, _:= os.Open(jacocoPath)
 	if jacoco == nil {
 		return nil
