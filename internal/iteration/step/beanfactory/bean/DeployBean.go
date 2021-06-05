@@ -8,6 +8,14 @@ import (
 	"time"
 	"yama.io/yamaIterativeE/internal/db"
 	"yama.io/yamaIterativeE/internal/deploy/container/yamapouch/command"
+	"yama.io/yamaIterativeE/internal/util"
+)
+
+const (
+	ServerDeploymentConstantsIP = "spring.cloud.consul.discovery.hostname"
+	ServerDeploymentConstantsName = "spring.cloud.consul.discovery.instance-id"
+	ServerDeploymentConstantsTags = "spring.cloud.consul.discovery.tags"
+	ServerDeploymentConstantsConsulHost = "spring.cloud.consul.host"
 )
 
 type DeployBean struct {
@@ -15,12 +23,20 @@ type DeployBean struct {
 }
 
 // appName, execPath, serverName, serverIP
-func (db *DeployBean) Execute(stringArgs []string, env *map[string]interface{}) error{
-	return db.deploy(stringArgs[0], stringArgs[1], stringArgs[2], stringArgs[3])
+func (depb *DeployBean) Execute(stringArgs []string, env *map[string]interface{}) error{
+	return depb.deploy(stringArgs[0], stringArgs[1], stringArgs[2], stringArgs[3])
 }
 
-func (*DeployBean) deploy(appName, execPath, serverName, serverIp string) error {
-	generateSourceDir := fmt.Sprintf(GenerateSourcePath, execPath, appName)
+func (depb *DeployBean) prepareSourcePath(execPath, appName string) string{
+	return fmt.Sprintf(GenerateSourcePath, execPath, appName)
+}
+
+func (depb *DeployBean) deploy(appName, execPath, serverName, serverIp string) error {
+	generateSourceDir := depb.prepareSourcePath(execPath, appName)
+	return depb.doDeploy(generateSourceDir, serverName, serverIp)
+}
+
+func (*DeployBean) doDeploy (generateSourceDir, serverName, serverIp string) error {
 	sources, _ := ioutil.ReadDir(generateSourceDir)
 	executable := ""
 	for _, source := range sources{
@@ -32,12 +48,12 @@ func (*DeployBean) deploy(appName, execPath, serverName, serverIp string) error 
 	}
 
 	if executable != "" {
-		state := db.GetServerStateByName(serverName)
-		if state == db.RUNNING {
+		server := db.GetServerStateAndTypeByName(serverName)
+		if server.State == db.RUNNING {
 			command.StopContainer(serverName)
 			command.StartAppInContainer(serverName, "top -b")
 		}
-		command.DeployAppInContainer(serverName, "/jdk1.8.0_281/bin/java", fmt.Sprintf("-jar /root/%s", executable))
+		command.DeployAppInContainer(serverName, "/jdk1.8.0_281/bin/java", fmt.Sprintf("-jar /root/%s --%s=%s --%s=%s --%s=%s --%s=%s", executable, ServerDeploymentConstantsIP, serverIp, ServerDeploymentConstantsName, fmt.Sprintf("instance-%s",serverName), ServerDeploymentConstantsTags, server.Type.ToString(), ServerDeploymentConstantsConsulHost, util.GetLocalIPv4Address()))
 		db.UpdateServerAfterDeploy(serverName)
 	}
 	var counter int

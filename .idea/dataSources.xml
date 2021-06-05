@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="DataSourceManagerImpl" format="xml" multifile-model="true">
-    <data-source source="LOCAL" name="yamaIterativeE" uuid="23c12cd4-fb3d-4533-96fd-ba1310ddd7ac">
+    <data-source source="LOCAL" name="yamaIterativeE" uuid="7582131a-8b93-4247-8e0a-2e04d7047859">
       <driver-ref>sqlite.xerial</driver-ref>
       <synchronize>true</synchronize>
       <jdbc-driver>org.sqlite.JDBC</jdbc-driver>

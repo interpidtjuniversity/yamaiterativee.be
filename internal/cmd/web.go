@@ -14,6 +14,7 @@ import (
 	"yama.io/yamaIterativeE/internal/home/application"
 	"yama.io/yamaIterativeE/internal/home/config"
 	"yama.io/yamaIterativeE/internal/home/iterations"
+	"yama.io/yamaIterativeE/internal/home/release"
 	"yama.io/yamaIterativeE/internal/home/server"
 	"yama.io/yamaIterativeE/internal/home/workbench"
 	"yama.io/yamaIterativeE/internal/iteration/env"
@@ -155,6 +156,11 @@ func runWeb(c *cli.Context) error {
 						m.Get("", iterations.GetIterationAllUsers)
 					})
 				})
+			})
+
+			m.Group("/release", func() {
+				m.Post("/history", release.QueryReleaseHistory)
+				m.Post("/deploy", release.DeployHistoryRelease)
 			})
 
 			m.Group("/server", func() {

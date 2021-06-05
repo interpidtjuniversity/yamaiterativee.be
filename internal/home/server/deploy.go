@@ -17,6 +17,20 @@ import (
 	"yama.io/yamaIterativeE/internal/util"
 )
 
+/**
+由于拉取其它开发分支需要编译且编译产物仅仅部署一次，
+所以与注册中心配置有关的spring.cloud.consul.discovery.hostname和spring.cloud.consul.discovery.instance-id
+两项直接写入配置文件中并且不添加到启动参数中
+*/
+/**
+Since pulling other development branches requires compilation and
+the compiled product is only deployed once,
+spring.cloud.consul.discovery.hostname
+and
+spring.cloud.consul.discovery.instance-id
+related to the registry configuration are directly written into the configuration file
+and not added to the startup parameters
+*/
 func DeployAppInServer(c *context.Context) []byte {
 	serverName := c.Query("serverName")
 	serverIp := c.Query("serverIP")

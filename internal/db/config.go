@@ -39,8 +39,8 @@ type ConfigItem struct {
 var SPRING_MYSQL_CONFIG = Config{
 	ApplicationType: "SPRING_MYSQL",
 	ConfigItems: []ConfigItem{
-		{"spring.datasource.username", "root", false, true},
-		{"spring.datasource.password", 123456, false, true},
+		{"spring.datasource.username", "yamaiterativee", false, true},
+		{"spring.datasource.password", "Cy19991116", false, true},
 		{"spring.datasource.url", "-", false, true},
 	},
 }

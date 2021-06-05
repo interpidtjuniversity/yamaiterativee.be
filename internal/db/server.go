@@ -264,13 +264,10 @@ func GetApplicationProdServer(appOwner, appName string) ([]*Server, error) {
 	return servers, err
 }
 
-func GetServerStateByName(name string) ServerState {
+func GetServerStateAndTypeByName(name string) *Server {
 	server := new(Server)
-	exist, err := x.Table("server").Cols("state").Where(builder.Eq{"name":name}).Get(server)
-	if !exist || err != nil {
-		return -1
-	}
-	return server.State
+	x.Table("server").Cols("state", "type").Where(builder.Eq{"name":name}).Get(server)
+	return server
 }
 
 func UpdateProdServerReleaseId(appOwner, appName, releaseId string) error {
@@ -278,6 +275,6 @@ func UpdateProdServerReleaseId(appOwner, appName, releaseId string) error {
 		return fmt.Errorf("release_id can not be empty")
 	}
 	server := &Server{ReleaseId: releaseId}
-	_, err := x.Table("server").Cols("release_id").Where(builder.Eq{"app_owner":appOwner, "appName": appName, "type":PROD}).Update(server)
+	_, err := x.Table("server").Cols("release_id").Where(builder.Eq{"app_owner":appOwner, "app_name": appName, "type":PROD}).Update(server)
 	return err
 }

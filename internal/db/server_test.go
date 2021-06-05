@@ -35,7 +35,7 @@ func TestUpdateServerAfterApply(t *testing.T) {
 
 func TestGetSameGroupServerByGroupIdAndServiceName(t *testing.T) {
 	NewEngine()
-	servers, err := GetSameGroupServerByGroupIdAndServiceName(0, "interpidtjuniversity-miniselfop")
+	servers, err := GetSameGroupServerByGroupIdAndServiceName(string(0), "interpidtjuniversity-miniselfop")
 	fmt.Print(len(servers))
 	assert.Nil(t, err)
 }

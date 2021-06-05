@@ -543,7 +543,7 @@ func drawPipeline(actions []*db.IterationAction) ([]byte, error) {
 		filterStateMap[fmt.Sprintf("%d-%d", filterResult.ActId, filterResult.StageId)] = filterResult.State
 	}
 
-	var pipelineInfos []pipelineInfo
+	var pipelineInfos = make([]pipelineInfo, 0)
 	stageIdsMap := make(map[string][]*db.Stage)
 	// create completely pipelineInfo with pipeline template and envActions
 	stream.ForEach(func(action *db.IterationAction) {

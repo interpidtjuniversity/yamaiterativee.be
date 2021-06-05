@@ -279,10 +279,26 @@ func AdvanceIteration(c *context.Context) []byte {
 		if grayPercent!="100" {
 			return []byte("error")
 		}
+	} else if nextState == db.FINISH_STATE {
 		// 2. get master commit add update prod server release_id
 		masterCommitId, _ := invokerImpl.InvokeQueryMasterLatestCommitIdService(iteration.OwnerName, iteration.RepoName)
 		db.UpdateProdServerReleaseId(iteration.OwnerName, iteration.RepoName, masterCommitId)
 		// 3. jar it to version repository
+		go func() {
+			url := db.GetApplicationRepoURLByOwnerAndRepo(iteration.OwnerName, iteration.RepoName)
+			execPath := fmt.Sprintf(PIPELINE_EXEC_PATH, util.GenerateRandomStringWithSuffix(20,""))
+			var resultMap = make(map[string]interface{})
+			step.RunCodeStepWithResult("nexusUploadBean", &resultMap, []string{iteration.OwnerName, iteration.RepoName, url, "master",
+				execPath, "prod", "nil(serverName)", "nil(serverIP)", strconv.Itoa(int(iterId)), ""}...)
+
+			if url, ok := resultMap["jarNexusURL"].(string); ok {
+				// release success
+				newRelease := &db.Release{URL: url, AppOwner: iteration.OwnerName, AppName: iteration.RepoName, CommitId: masterCommitId, IterationId: iterId, Time: util.GetDefaultCurrentTime(),
+					CommitLink: fmt.Sprintf("http://localhost:3002/%s/%s/src/%s", iteration.OwnerName, iteration.RepoName, masterCommitId)}
+				db.InsertRelease(newRelease)
+			}
+		}()
+
 	}
 
 

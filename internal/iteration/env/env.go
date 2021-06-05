@@ -15,6 +15,7 @@ var ieah = &iterEnvActionHolder{m: map[string][]iterEnvAction{"dev": {{ButtonSho
 	"pre":       {{ButtonShowWords:"完成预发阶段",ID: "finishPre", Type: 2}, {ButtonShowWords:"提交MR",ID: "submitMRPre", Type: 2}, {ButtonShowWords:"Jar包管理",ID: "jarManagePre", Type: 2}, {ButtonShowWords:"触发pipeline",ID: "triggerPipelinePre", Type: 2}},
 	"grayscale": {{ButtonShowWords:"完成灰度阶段", ID: "finishGray", Type: 3}, {ButtonShowWords:"配置白名单", ID: "whiteList", Type: 3}, {ButtonShowWords:"配置黑名单", ID: "blackList", Type: 3}, {ButtonShowWords:"推进", ID: "advanceGray", Type: 3}, {ButtonShowWords:"回滚", ID: "rollBackGray", Type: 3}},
 	"prod":      {{ButtonShowWords:"完成发布", ID: "finishProd", Type: 4}},
+	"finish":    {{ButtonShowWords:"发布完成", ID: "prodFinish", Type: 4}},
 	},
 }
 type iterEnvActionHolder struct {
@@ -114,6 +115,7 @@ func IterInfo(c *context.Context) []byte {
 		{"预发阶段", "", "wait"},
 		{"灰度发布", "", "wait"},
 		{"发布阶段", "", "wait"},
+		{"发布完成", "", "wait"},
 	}
 	for i := 0; i<int(iteration.IterState);i++ {
 		stateArray[i][2] = "finish"

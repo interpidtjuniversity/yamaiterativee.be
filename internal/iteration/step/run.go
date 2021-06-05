@@ -31,3 +31,11 @@ func RunCodeStep(name string, args ...string) error {
 	}
 	return bean.Execute(args, nil)
 }
+
+func RunCodeStepWithResult(name string, env *map[string]interface{}, args ...string) error {
+	bean := beanfactory.GetBean(name)
+	if bean == nil {
+		return fmt.Errorf("no such bean: %s", name)
+	}
+	return bean.Execute(args, env)
+}

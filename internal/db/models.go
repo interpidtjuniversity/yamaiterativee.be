@@ -33,6 +33,7 @@ type Engine interface {
 }
 
 var (
+	//x
 	x            *xorm.Engine
 	legacyTables []interface{}
 	HasEngine    bool

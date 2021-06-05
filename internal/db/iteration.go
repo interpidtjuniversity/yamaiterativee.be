@@ -33,6 +33,8 @@ func (is IterationState) ToString() string {
 		return "gray"
 	case PROD_STATE:
 		return "prod"
+	case FINISH_STATE:
+		return "finish"
 	default:
 		return "unknown"
 	}
@@ -52,6 +54,8 @@ func (is IterationState)FromString(env string) IterationState {
 		return GRAY_STATE
 	case "prod":
 		return PROD_STATE
+	case "finish":
+		return FINISH_STATE
 	default:
 		return UNKNOWN_STATE
 	}
